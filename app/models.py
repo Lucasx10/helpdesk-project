@@ -8,13 +8,13 @@ class StatusChamado(models.TextChoices):
  
 class Chamados(models.Model):
     titulo = models.CharField(max_length=100)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='chamados_abertos')
     status = models.CharField(max_length=25, choices=StatusChamado.choices, default=StatusChamado.ABERTO)
     descricao = models.TextField()
     setor = models.CharField(max_length=50)
     
     # Responsável TI (será preenchido quando um usuário de TI aceitar o chamado)
-    responsavel_ti = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    responsavel_ti = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='chamados_atendidos')
     created_at = models.DateTimeField('Criado em', auto_now_add=True)
     updated_at = models.DateTimeField('Atualizado em', auto_now=True) 
 

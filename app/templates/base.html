@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Chamados{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static '/style.css' %}">
+</head>
+<body>
+  <div class="header">
+    <a class="logo">Help Desk T.I PGE</a>
+    <div class="header-right">
+      <a href="{% url 'chamado' %}">Abrir Chamado</a>
+      <a href="{% url 'index' %}" class=sel>Chamados</a>
+      <a href="/admin/" class=sel>Admin login</a>
+      <a href="{% url 'logout' %}">Logout</a>
+    </div>
+  </div>
+   <div id="body">
+   {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

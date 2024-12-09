@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %} chamado #{{chamado.id}} {% endblock %}
+{% block content %}
+<div class="chamado">
+ <table class="styled-table">
+ <h2> Chamado #{{chamado.id}}</h2>
+ <tbody>
+  <tr>
+   <td>Titulo</td>
+   <td>{{chamado.titulo}}</td>
+  </tr>
+  <tr>
+   <td>Status</td>
+   <td>{{chamado.status}}</td>
+  </tr>
+  <tr>
+   <td>Usuario</td>
+   <td>{{chamado.user}}</td>
+  </tr>
+  <tr>
+   <td>Descrição</td>
+   <td>{{chamado.descricao}}</td>
+  </tr>
+  <tr>
+   <td>Criado em</td>
+   <td>{{chamado.created_at}}</td>
+  </tr>
+  <tr>
+   <td>Atualizado em</td>
+   <td>{{chamado.updated_at}}</td>
+  </tr>
+ </tbody>
+ </table>
+</div>
+{% endblock %}

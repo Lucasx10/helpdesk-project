@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Registration Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 400px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border: 1px solid #dddfe2;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 95%;
+      padding: 10px;
+      border: 1px solid #dddfe2;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      background-color: #1877f2;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #1565c0;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <center><h2>Helpdesk T.I PGE</h2></center>
+  <div class="container" style="margin-top: 10%;">
+    <h1>Register</h1>
+    <form method="post" action="{% url 'registration' %}">
+      {% csrf_token %}
+      <label for="fullname">Full Name</label>
+      <input type="text" id="username" placeholder="Enter your full name" name="username" required>
+
+      <label for="email">Email</label>
+      <input type="text" id="email" placeholder="Enter your email" name="email" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" name="password" required>
+
+      <input type="submit" value="Cadastrar">
+
+      <p class="text-center">Já tem uma conta?<a href="{% url 'loginpage' %}"> Login</a></p>
+    </form>
+  </div>
+</body>
+</html>

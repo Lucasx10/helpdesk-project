@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %} chamados {% endblock %}
+{% block content %}
+<table class="styled-table">
+ <thead>
+  <tr>
+   <th>Chamado</th>
+   <th>Titulo</th>
+   <th>Usuario</th>
+   <th>Setor</th>
+   <th>Criado</th>
+   <th>Última atualização</th>
+   <th>Status</th>
+  </tr>
+ </thead>
+ <tbody>
+  {% for chamado in chamados %}
+  <tr>
+   <td><a href="/chamado/{{chamado.id}}">{{chamado.id}}</td>
+   <td>{{chamado.titulo}}</td>
+   <td>{{chamado.user}}</td>
+   <td>{{chamado.setor}}</td>
+   <td>{{chamado.created_at}}</td>
+   <td>{{chamado.updated_at}}</td>
+   <td>{{chamado.status}}</td>
+  </tr>
+  {% endfor %}
+ </tbody>
+</table>
+{% endblock %}
