@@ -1,35 +1,96 @@
 {% extends 'base.html' %}
-{% block title %} chamado #{{chamado.id}} {% endblock %}
+{% block title %} Chamado #{{ chamado.id }} {% endblock %}
 {% block content %}
 <div class="chamado">
- <table class="styled-table">
- <h2> Chamado #{{chamado.id}}</h2>
- <tbody>
-  <tr>
-   <td>Titulo</td>
-   <td>{{chamado.titulo}}</td>
-  </tr>
-  <tr>
-   <td>Status</td>
-   <td>{{chamado.status}}</td>
-  </tr>
-  <tr>
-   <td>Usuario</td>
-   <td>{{chamado.user}}</td>
-  </tr>
-  <tr>
-   <td>Descrição</td>
-   <td>{{chamado.descricao}}</td>
-  </tr>
-  <tr>
-   <td>Criado em</td>
-   <td>{{chamado.created_at}}</td>
-  </tr>
-  <tr>
-   <td>Atualizado em</td>
-   <td>{{chamado.updated_at}}</td>
-  </tr>
- </tbody>
- </table>
+    <table class="styled-table">
+        <h2>Chamado #{{ chamado.id }}</h2>
+        <tbody>
+            <tr>
+                <td>Título</td>
+                <td>{{ chamado.titulo }}</td>
+            </tr>
+            <tr>
+                <td>Status</td>
+                <td>{{ chamado.status }}</td>
+            </tr>
+            <tr>
+                <td>Usuário</td>
+                <td>{{ chamado.user }}</td>
+            </tr>
+            <tr>
+                <td>Descrição</td>
+                <td>{{ chamado.descricao }}</td>
+            </tr>
+            <tr>
+                <td>Criado em</td>
+                <td>{{ chamado.created_at }}</td>
+            </tr>
+            <tr>
+                <td>Atualizado em</td>
+                <td>{{ chamado.updated_at }}</td>
+            </tr>
+
+            {% if user.profile.equipe_ti %}
+                {% if chamado.status == 'Aberto' %}
+                    <!-- Botão Atender Chamado -->
+                    <td>
+                        <form action="{% url 'editar_chamado' chamado.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="Em andamento">
+                            <button type="submit">Atender Chamado</button>
+                        </form>
+                    </td>
+                {% elif chamado.status == 'Em andamento' %}
+                    <!-- Botão Finalizar Chamado -->
+                    <td>
+                        <form action="{% url 'editar_chamado' chamado.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="Pendente">
+                            <button type="submit">Finalizar Chamado</button>
+                        </form>
+                    </td>
+                {% endif %}
+            {% endif %}
+
+            {% if user == chamado.user %}
+                {% if chamado.status == 'Pendente' %}
+                    <td class="chamado">
+                        <p>O problema foi resolvido?</p>
+                        <form action="{% url 'confirmar_finalizacao' chamado.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" name="confirmar">Sim, o problema foi resolvido</button>
+                            <button type="submit" name="nao_confirmar">Não, o problema não foi resolvido</button>
+                        </form>
+                    </td>
+                {% endif %}
+            {% endif %}
+        </tbody>
+    </table>
 </div>
+
+<!-- Exibir mensagens de sucesso ou erro -->
+{% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 {% endblock %}
+
+<script type="text/javascript">
+    // Verifique se há uma mensagem de sucesso e esconda o formulário de confirmação
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const confirmarButton = e.target.querySelector('button[name="confirmar"]');
+            if (confirmarButton && e.submitter === confirmarButton) {
+                // Esconda o formulário e mostre uma mensagem de agradecimento
+                document.getElementById("confirmacao-finalizacao").innerHTML = '<p>Obrigado por confirmar! O chamado será encerrado.</p>';
+            }
+        });
+    }
+</script>

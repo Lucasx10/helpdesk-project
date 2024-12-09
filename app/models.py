@@ -1,9 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Profile(models.Model):
+    equipe_ti = models.BooleanField(default=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    
 class StatusChamado(models.TextChoices):
  ABERTO = 'Aberto'
  EM_ANDAMENTO = 'Em Andamento'
+ PENDENTE = 'Pendente'
  CONCLUIDO = 'Concluído'
  
 class Chamados(models.Model):
