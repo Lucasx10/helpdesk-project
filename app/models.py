@@ -23,3 +23,8 @@ class Chamados(models.Model):
     created_at = models.DateTimeField('Criado em', auto_now_add=True)
     updated_at = models.DateTimeField('Atualizado em', auto_now=True) 
 
+class Comentarios(models.Model):
+    chamado = models.ForeignKey(Chamados, related_name='comentarios', on_delete=models.CASCADE)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    texto = models.TextField()
+    criado_em = models.DateTimeField(auto_now_add=True)

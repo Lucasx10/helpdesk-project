@@ -29,6 +29,12 @@
                 <td>Atualizado em</td>
                 <td>{{ chamado.updated_at }}</td>
             </tr>
+            {% if chamado.status != 'Aberto'  %}
+            <tr>    
+                <td>Responsável TI</td>
+                <td>{{ chamado.responsavel_ti}}</td>
+            </tr>
+            {%endif%}
 
             {% if user.profile.equipe_ti %}
                 {% if chamado.status == 'Aberto' %}
@@ -66,6 +72,29 @@
             {% endif %}
         </tbody>
     </table>
+     <!-- Exibir Comentários -->
+     {% if user == chamado.user or user.profile.equipe_ti %}
+     <div class="comentarios">
+        <h3>Comentários</h3>
+        {% for comentario in chamado.comentarios.all %}
+            <div class="comentario">
+                <p><strong>{{ comentario.usuario.username }}</strong> ({{ comentario.criado_em }}):</p>
+                <p>{{ comentario.texto }}</p>
+            </div>
+                {% empty %}
+                    <p>Não há comentários ainda.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Formulário de Novo Comentário -->
+            <h3>Adicionar Comentário</h3>
+            <form method="POST">
+                {% csrf_token %}
+                {{ comentario_form.as_p }}
+                <button type="submit">Adicionar Comentário</button>
+            </form>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Exibir mensagens de sucesso ou erro -->

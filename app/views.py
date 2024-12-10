@@ -3,7 +3,7 @@ from .models import *
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from .forms import ComentarioForm
 
 # Create your views here.
 def register(request):
@@ -56,8 +56,24 @@ def index(request):
 
 
 def chamado_by_id(request, chamado_id):
- chamado = get_object_or_404(Chamados, pk=chamado_id)
- return render(request, 'detalhe_chamado.html', {'chamado':chamado})
+    chamado = get_object_or_404(Chamados, pk=chamado_id)
+     
+    # Adicionar comentário
+    if request.method == 'POST':
+        comentario_form = ComentarioForm(request.POST)
+        if comentario_form.is_valid():
+            comentario = comentario_form.save(commit=False)
+            comentario.chamado = chamado
+            comentario.usuario = request.user
+            comentario.save()
+            return redirect('chamado_by_id', chamado_id=chamado.id)
+    else:
+        comentario_form = ComentarioForm()
+
+    return render(request, 'detalhe_chamado.html', {
+        'chamado': chamado,
+        'comentario_form': comentario_form,
+    })
 
 @login_required(login_url='loginpage')
 def signout(request):
@@ -88,6 +104,10 @@ def abrir_chamado(request):
         return redirect("/")
     else:
         return render(request, 'abrir_chamado.html')
+
+def detalhe_chamado(request, chamado_id):
+    chamado = get_object_or_404(Chamados, id=chamado_id)
+
     
 @login_required(login_url='loginpage')
 def editar_chamado(request, chamado_id):
@@ -98,8 +118,10 @@ def editar_chamado(request, chamado_id):
         if request.method == 'POST':
             # Modificar o status do chamado com base no valor enviado
             novo_status = request.POST.get('status')
+            ti_chamado = request.user
             if novo_status:
                 chamado.status = novo_status
+                chamado.responsavel_ti = ti_chamado
                 chamado.save()
                 return redirect('chamado_by_id', chamado_id=chamado.id)
 
