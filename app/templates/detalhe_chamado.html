@@ -1,125 +1,131 @@
 {% extends 'base.html' %}
+
 {% block title %} Chamado #{{ chamado.id }} {% endblock %}
+
 {% block content %}
-<div class="chamado">
-    <table class="styled-table">
-        <h2>Chamado #{{ chamado.id }}</h2>
-        <tbody>
-            <tr>
-                <td>Título</td>
-                <td>{{ chamado.titulo }}</td>
-            </tr>
-            <tr>
-                <td>Status</td>
-                <td>{{ chamado.status }}</td>
-            </tr>
-            <tr>
-                <td>Usuário</td>
-                <td>{{ chamado.user }}</td>
-            </tr>
-            <tr>
-                <td>Descrição</td>
-                <td>{{ chamado.descricao }}</td>
-            </tr>
-            <tr>
-                <td>Criado em</td>
-                <td>{{ chamado.created_at }}</td>
-            </tr>
-            <tr>
-                <td>Atualizado em</td>
-                <td>{{ chamado.updated_at }}</td>
-            </tr>
-            {% if chamado.status != 'Aberto'  %}
-            <tr>    
-                <td>Responsável TI</td>
-                <td>{{ chamado.responsavel_ti}}</td>
-            </tr>
-            {%endif%}
-
-            {% if user.profile.equipe_ti %}
-                {% if chamado.status == 'Aberto' %}
-                    <!-- Botão Atender Chamado -->
-                    <td>
-                        <form action="{% url 'editar_chamado' chamado.id %}" method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="status" value="Em andamento">
-                            <button type="submit">Atender Chamado</button>
-                        </form>
-                    </td>
-                {% elif chamado.status == 'Em andamento' %}
-                    <!-- Botão Finalizar Chamado -->
-                    <td>
-                        <form action="{% url 'editar_chamado' chamado.id %}" method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="status" value="Pendente">
-                            <button type="submit">Finalizar Chamado</button>
-                        </form>
-                    </td>
-                {% endif %}
-            {% endif %}
-
-            {% if user == chamado.user %}
-                {% if chamado.status == 'Pendente' %}
-                    <td class="chamado">
-                        <p>O problema foi resolvido?</p>
-                        <form action="{% url 'confirmar_finalizacao' chamado.id %}" method="POST">
-                            {% csrf_token %}
-                            <button type="submit" name="confirmar">Sim, o problema foi resolvido</button>
-                            <button type="submit" name="nao_confirmar">Não, o problema não foi resolvido</button>
-                        </form>
-                    </td>
-                {% endif %}
-            {% endif %}
-        </tbody>
-    </table>
-     <!-- Exibir Comentários -->
-     {% if user == chamado.user or user.profile.equipe_ti %}
-     <div class="comentarios">
-        <h3>Comentários</h3>
-        {% for comentario in chamado.comentarios.all %}
-            <div class="comentario">
-                <p><strong>{{ comentario.usuario.username }}</strong> ({{ comentario.criado_em }}):</p>
-                <p>{{ comentario.texto }}</p>
-            </div>
-                {% empty %}
-                    <p>Não há comentários ainda.</p>
-                {% endfor %}
-            </div>
-
-            <!-- Formulário de Novo Comentário -->
-            <h3>Adicionar Comentário</h3>
-            <form method="POST">
-                {% csrf_token %}
-                {{ comentario_form.as_p }}
-                <button type="submit">Adicionar Comentário</button>
-            </form>
+<div class="row">
+    {% if messages %}
+    <div class="messages m-0">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+      {% endfor %}
     </div>
     {% endif %}
-</div>
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-md-flex">
+          <div>
+            <h4 class="card-title">Detalhes do Chamado #{{ chamado.id }}</h4>
+            <h5 class="card-subtitle">Informações do chamado</h5>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table mb-0 table-hover align-middle text-nowrap">
+            <tbody>
+              <tr>
+                <td>Título</td>
+                <td>{{ chamado.titulo }}</td>
+              </tr>
+              <tr>
+                <td>Status</td>
+                <td>                    
+                {% if chamado.status == "Concluído" %}
+                    <label class="badge bg-success">{{ chamado.status }}</label>
+                {% elif chamado.status == 'Aberto' %}
+                    <label class="badge bg-info">{{ chamado.status }}</label>
+                {% elif chamado.status == 'Em andamento' %}
+                    <label class="badge bg-orange">{{ chamado.status }}</label>
+                {% elif chamado.status == 'Pendente' %}
+                    <label class="badge bg-purple">{{ chamado.status }}</label>
+                {%endif%}</td>
+              </tr>
+              <tr>
+                <td>Usuário</td>
+                <td>{{ chamado.user }}</td>
+              </tr>
+              <tr>
+                <td>Descrição</td>
+                <td>{{ chamado.descricao }}</td>
+              </tr>
+              <tr>
+                <td>Criado em</td>
+                <td>{{ chamado.created_at }}</td>
+              </tr>
+              <tr>
+                <td>Atualizado em</td>
+                <td>{{ chamado.updated_at }}</td>
+              </tr>
+              {% if chamado.status != 'Aberto' %}
+              <tr>
+                <td>Responsável TI</td>
+                <td>{{ chamado.responsavel_ti }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
 
-<!-- Exibir mensagens de sucesso ou erro -->
-{% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
+        {% if user.profile.equipe_ti %}
+          {% if chamado.status == 'Aberto' %}
+          <form action="{% url 'editar_chamado' chamado.id %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="Em andamento">
+            <button class="btn btn-primary mt-3" type="submit">Atender Chamado</button>
+          </form>
+          {% elif chamado.status == 'Em andamento' %}
+          <form action="{% url 'editar_chamado' chamado.id %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="Pendente">
+            <button class="btn btn-success mt-3" type="submit">Finalizar Chamado</button>
+          </form>
+          {% endif %}
+        {% endif %}
+
+        {% if user == chamado.user and chamado.status == 'Pendente' %}
+        <div id="confirmacao-finalizacao" class="mt-4">
+          <p>O problema foi resolvido?</p>
+          <form action="{% url 'confirmar_finalizacao' chamado.id %}" method="POST">
+            {% csrf_token %}
+            <button class="btn btn-success" type="submit" name="confirmar">Sim, o problema foi resolvido</button>
+            <button class="btn btn-danger" type="submit" name="nao_confirmar">Não, o problema não foi resolvido</button>
+          </form>
+        </div>
+        {% endif %}
+
+<!-- ============================================================== -->
+<!-- Comentarios -->
+<!-- ============================================================== -->
+
+        {% if user == chamado.user or user.profile.equipe_ti %}
+        <div class="mt-4">
+          <h4>Comentários</h4>
+          <div class="comment-widgets">
+            {% for comentario in chamado.comentarios.all %}
+            <div class="d-flex flex-row comment-row">
+              <div class="comment-text w-100">
+                <h6 class="font-medium">{{ comentario.usuario.username }}</h6>
+                <span class="m-b-15 d-block">{{ comentario.texto }}</span>
+                <span class="text-muted">{{ comentario.criado_em }}</span>
+              </div>
             </div>
-        {% endfor %}
+            {% empty %}
+            <p>Não há comentários ainda.</p>
+            {% endfor %}
+          </div>
+
+          <h4 class="mt-4">Adicionar Comentário</h4>
+          <form method="POST">
+            {% csrf_token %}
+            {{ comentario_form.as_p }}
+            <button class="btn btn-primary mt-2" type="submit">Adicionar Comentário</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
     </div>
-{% endif %}
-
+  </div>
+</div>
 {% endblock %}
-
-<script type="text/javascript">
-    // Verifique se há uma mensagem de sucesso e esconda o formulário de confirmação
-    const form = document.querySelector('form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const confirmarButton = e.target.querySelector('button[name="confirmar"]');
-            if (confirmarButton && e.submitter === confirmarButton) {
-                // Esconda o formulário e mostre uma mensagem de agradecimento
-                document.getElementById("confirmacao-finalizacao").innerHTML = '<p>Obrigado por confirmar! O chamado será encerrado.</p>';
-            }
-        });
-    }
-</script>

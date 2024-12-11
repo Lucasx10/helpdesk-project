@@ -1,30 +1,90 @@
 {% extends 'base.html' %}
-{% block title %} chamados {% endblock %}
+{% block title %}Chamados{% endblock %}
 {% block content %}
-<table class="styled-table">
- <thead>
-  <tr>
-   <th>Chamado</th>
-   <th>Titulo</th>
-   <th>Usuario</th>
-   <th>Setor</th>
-   <th>Criado</th>
-   <th>Última atualização</th>
-   <th>Status</th>
-  </tr>
- </thead>
- <tbody>
-  {% for chamado in chamados %}
-  <tr>
-   <td><a href="/chamado/{{chamado.id}}">{{chamado.id}}</td>
-   <td>{{chamado.titulo}}</td>
-   <td>{{chamado.user}}</td>
-   <td>{{chamado.setor}}</td>
-   <td>{{chamado.created_at}}</td>
-   <td>{{chamado.updated_at}}</td>
-   <td>{{chamado.status}}</td>
-  </tr>
-  {% endfor %}
- </tbody>
-</table>
+<!-- ============================================================== -->
+<!-- Table -->
+<!-- ============================================================== -->
+<div class="row">
+  <!-- column -->
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <!-- title -->
+        <div class="d-md-flex">
+          <div>
+            <h4 class="card-title">Lista de Chamados</h4>
+            <h5 class="card-subtitle mb-4">
+              Visualize os chamados e detalhes
+            </h5>
+          </div>
+        </div>
+        <!-- title -->
+        <div class="table-responsive">
+          <table class="table mb-0 table-hover align-middle text-nowrap">
+            <thead>
+              <tr>
+                <th class="border-top-0"><h5>Chamado</h5></th>
+                <th class="border-top-0"><h5>Título</h5></th>
+                <th class="border-top-0"><h5>Usuário</h5></th>
+                <th class="border-top-0"><h5>Setor</h5></th>
+                <th class="border-top-0"><h5>Criado</h5></th>
+                <th class="border-top-0"><h5>Última Atualização</h5></th>
+                <th class="border-top-0"><h5>Status</h5></th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for chamado in page_obj.object_list %}
+                <tr>
+                  <td>
+                    <a href="/chamado/{{ chamado.id }}" class="btn btn-circle btn-info text-white">
+                      {{ chamado.id }}
+                    </a>
+                  </td>
+                  <td>{{ chamado.titulo }}</td>
+                  <td>{{ chamado.user }}</td>
+                  <td>{{ chamado.setor }}</td>
+                  <td>{{ chamado.created_at }}</td>
+                  <td>{{ chamado.updated_at }}</td>
+                  <td>
+                    {% if chamado.status == "Concluído" %}
+                        <label class="badge bg-success">{{ chamado.status }}</label>
+                    {% elif chamado.status == 'Aberto' %}
+                        <label class="badge bg-info">{{ chamado.status }}</label>
+                    {% elif chamado.status == 'Em andamento' %}
+                        <label class="badge bg-orange">{{ chamado.status }}</label>
+                    {% elif chamado.status == 'Pendente' %}
+                        <label class="badge bg-purple">{{ chamado.status }}</label>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center">Nenhum chamado encontrado.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+          </table>
+        </div>
+        <div class="pagination mt-4 align-items-center justify-content-center">
+            <span class="step-links">
+              {% if page_obj.has_previous %}
+                  <a href="?page={{ page_obj.previous_page_number }}">&laquo;anterior</a>
+              {% endif %}
+          
+              <span class="current">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+              </span>
+          
+              {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.next_page_number }}">próxima&raquo;</a>
+              {% endif %}
+            </span>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ============================================================== -->
+<!-- Table -->
+<!-- ============================================================== -->
 {% endblock %}

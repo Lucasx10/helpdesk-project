@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+
+<head>
+  {% load static %}
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>{% block title %}Helpdesk T.I PGE{% endblock %}</title>
+
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon.png' %}" />
+  <link href="{% static 'css/chartist.min.css' %}" rel="stylesheet" />
+  <link href="{% static 'css/chartist-plugin-tooltip.css' %}" rel="stylesheet" />
+  <link href="{% static 'css/style.min.css' %}" rel="stylesheet" />
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+  <div class="main-wrapper">
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="{% static 'js/jquery.min.js' %}"></script>
+  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'js/app-style-switcher.js' %}"></script>
+  <script src="{% static 'js/waves.js' %}"></script>
+  <script src="{% static 'js/sidebarmenu.js' %}"></script>
+  <script src="{% static 'js/custom.js' %}"></script>
+  <script src="{% static 'js/chartist.min.js' %}"></script>
+  <script src="{% static 'js/chartist-plugin-tooltip.min.js' %}"></script>
+  <script src="{% static 'js/dashboard1.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+
+</html>

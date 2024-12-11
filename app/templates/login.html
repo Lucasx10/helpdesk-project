@@ -1,84 +1,75 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Login Page</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f2f5;
-      margin: 0;
-      padding: 0;
-    }
+{% extends "base_account.html" %}
 
-    .container {
-      width: 400px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #fff;
-      border: 1px solid #dddfe2;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+{% block title %}Helpdesk T.I PGE - Cadastro{% endblock %}
 
-    h1 {
-      font-size: 24px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
+{% load static %}
 
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 10px;
-    }
+{% block content %}
+    {% if messages %}
+    <div class="messages m-0">
+      {% for message in messages %}
+      <div class="alert alert-danger alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
-    input[type="text"],
-    input[type="password"] {
-      width: 95%;
-      padding: 10px;
-      border: 1px solid #dddfe2;
-      border-radius: 4px;
-      margin-bottom: 20px;
-    }
+    <!-- ============================================================== -->
+    <!-- Login Box -->
+    <!-- ============================================================== -->
+    <div class="position-relative overflow-hidden radial-gradient min-vh-100 d-flex align-items-center justify-content-center">
+      <div class="d-flex align-items-center justify-content-center w-100">
+        <div class="row justify-content-center w-100">
+          <div class="col-md-8 col-lg-6 col-xxl-3 auth-card">
+            <div class="card mb-0">
+              <div class="card-body">
+                <!-- Logo Section -->
+                <a href="#" class="text-nowrap logo-img text-center d-block py-3 w-100">
+                  <b class="logo-icon me-2">
+                    <img src="{% static 'PGE COLORIDO.svg' %}" alt="homepage" class="dark-logo" width="150" />
+                  </b>
+                </a>
+                <p class="text-center font-14">Helpdesk T.I - Login</p>
 
-    input[type="submit"] {
-      width: 100%;
-      padding: 10px;
-      background-color: #1877f2;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    input[type="submit"]:hover {
-      background-color: #1565c0;
-    }
-
-    .text-center {
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  {% load static %}
-  <center><img src = "{% static '/PGE COLORIDO.svg' %}" width="300" height="250" alt="LOGO SVG"/></center>
-  <div class="container">
-    <h1>Helpdesk T.I</h1>
-    <form action="{% url 'login_view' %}" method="post">
-      {% csrf_token %}
-      <label for="username">Username</label>
-      <input type="text" id="username" placeholder="Digite seu username" name="username" required>
-
-      <label for="password">Senha</label>
-      <input type="password" id="password" placeholder="Digite sua senha" name="password" required>
-
-      <input type="submit" value="Entrar">
-
-      <p class="text-center">Não tem uma conta? <a href="{% url 'register' %}">Cadastrar</a></p>
-      <p class="text-center">login de <a href="{% url 'admin:index' %}">admin</a></p>
-    </form>
+                <!-- Login Form -->
+                <form action="{% url 'login_view' %}" method="post">
+                  {% csrf_token %}
+                  <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Digite seu username" required>
+                  </div>
+                  <div class="mb-4">
+                    <label for="password" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Digite sua senha" required>
+                  </div>
+                  <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="form-check mb-0">
+                      <input class="form-check-input info" type="checkbox" id="remember" name="remember">
+                      <label class="form-check-label text-dark mb-0" for="remember">
+                        Lembrar-me
+                      </label>
+                    </div>
+                    <a class="text-info font-14" href="#">Esqueceu sua senha?</a>
+                  </div>
+                  <button type="submit" class="btn btn-info w-100 py-8 mb-4 font-14">Entrar</button>
+                  <div class="d-flex align-items-center justify-content-center">
+                    <p class="mb-0">Não tem uma conta?</p>
+                    <a class="text-info ms-2 font-14" href="{% url 'register' %}">Cadastrar</a>
+                  </div>
+                  <div class="d-flex align-items-center justify-content-center">
+                    <p class="mb-0">Login de</p>
+                    <a class="text-info ms-2 font-14" href="{% url 'admin:index' %}">admin</a>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- Login Box End -->
+    <!-- ============================================================== -->
   </div>
-</body>
-</html>
+{% endblock %}

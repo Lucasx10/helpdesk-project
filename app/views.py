@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import ComentarioForm
+from django.core.paginator import Paginator
 
 # Create your views here.
 def register(request):
@@ -45,14 +46,24 @@ def login_view(request):
         elif request.user.is_authenticated:
             return redirect("loginpage")
         else:
-            messages.success(request, "error credentials")
+            messages.error(request, "Credenciais Errada")
             return render(request, 'login.html')
     else:
         return render(request, 'login.html')
-    
+
 def index(request):
- chamados = Chamados.objects.order_by('-created_at')[:5]
- return render(request,'index.html', {'chamados': chamados})
+    # Obtendo todos os chamados, mas sem limitar diretamente na consulta
+    chamados_list = Chamados.objects.order_by('-created_at')
+    
+    # Paginação - definindo o número de chamados por página
+    paginator = Paginator(chamados_list, 5)  # 5 chamados por página
+    
+    # Pegando o número da página a partir da URL (parâmetro ?page=1)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Passando o page_obj para o template
+    return render(request, 'index.html', {'page_obj': page_obj})
 
 
 def chamado_by_id(request, chamado_id):
@@ -100,8 +111,8 @@ def abrir_chamado(request):
             user=user
         )
         new_query.save()
-
-        return redirect("/")
+        messages.success(request, "Chamado Aberto com sucesso!")
+        return redirect("abrir_chamado")
     else:
         return render(request, 'abrir_chamado.html')
 

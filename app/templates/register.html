@@ -1,85 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Registration Page</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f2f5;
-      margin: 0;
-      padding: 0;
-    }
+{% extends "base_account.html" %}
 
-    .container {
-      width: 400px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #fff;
-      border: 1px solid #dddfe2;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+{% block title %}Helpdesk T.I PGE - Cadastro{% endblock %}
 
-    h1 {
-      font-size: 24px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
+{% load static %}
 
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 10px;
-    }
-
-    input[type="text"],
-    input[type="senha"] {
-      width: 95%;
-      padding: 10px;
-      border: 1px solid #dddfe2;
-      border-radius: 4px;
-      margin-bottom: 20px;
-    }
-
-    input[type="submit"] {
-      width: 100%;
-      padding: 10px;
-      background-color: #1877f2;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    input[type="submit"]:hover {
-      background-color: #1565c0;
-    }
-
-    .text-center {
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <center><h2>Helpdesk T.I PGE</h2></center>
-  <div class="container" style="margin-top: 10%;">
-    <h1>Cadastro</h1>
-    <form method="post" action="{% url 'registration' %}">
-      {% csrf_token %}
-      <label for="username">Nome completo</label>
-      <input type="text" id="username" placeholder="Digite seu nome completo" name="username" required>
-
-      <label for="email">Email</label>
-      <input type="text" id="email" placeholder="Digite seu email" name="email" required>
-
-      <label for="senha">Senha</label>
-      <input type="senha" id="senha" placeholder="Digite sua senha" name="senha" required>
-
-      <input type="submit" value="Cadastrar">
-
-      <p class="text-center">Já tem uma conta?<a href="{% url 'loginpage' %}"> Login</a></p>
-    </form>
+{% block content %}
+<div class="position-relative overflow-hidden radial-gradient min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="d-flex align-items-center justify-content-center w-100">
+    <div class="row justify-content-center w-100">
+      <div class="col-md-8 col-lg-6 col-xxl-3 auth-card">
+        <div class="card mb-0">
+          <div class="card-body">
+            <a href="./index.html" class="text-nowrap logo-img text-center d-block py-3 w-100">
+              <b class="logo-icon me-2">
+                <img src="{% static 'PGE COLORIDO.svg' %}" alt="homepage" class="dark-logo" width="150" />
+              </b>
+            </a>
+            <p class="text-center font-14">Helpdesk T.I - Cadastro</p>
+            <form method="post" action="{% url 'registration' %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="username" class="form-label">Nome completo</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Digite seu nome completo" required>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Digite seu email" required>
+              </div>
+              <div class="mb-4">
+                <label for="senha" class="form-label">Senha</label>
+                <input type="password" class="form-control" id="senha" name="senha" placeholder="Digite sua senha" required>
+              </div>
+              <button type="submit" class="btn btn-info w-100 py-8 mb-4">Cadastrar</button>
+              <div class="d-flex align-items-center justify-content-center">
+                <p class="mb-0">Já tem uma conta?</p>
+                <a class="text-info ms-2 font-14" href="{% url 'loginpage' %}">Login</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</body>
-</html>
+</div>
+{% endblock %}
