@@ -1,9 +1,10 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import *
+from .models import User, Profile, Chamados
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import ComentarioForm
+from django.contrib.messages import constants
 from django.core.paginator import Paginator
 
 # Create your views here.
@@ -12,9 +13,25 @@ def register(request):
 
 def registration(request):
     if request.method == "POST":
+        nome = request.POST.get('nome')
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
+        confirmar_senha = request.POST.get('confirmar_senha')
+        
+        users = User.objects.filter(username=username)
+
+        if users.exists():
+            messages.add_message(request, constants.ERROR, 'Já existe um usuarios com esse username')
+            return redirect('register')
+
+        if password != confirmar_senha:
+            messages.add_message(request, constants.ERROR, 'A senha e confirmar senha devem ser iguais')
+            return redirect('register')
+
+        if len(password) < 6:
+            messages.add_message(request, constants.ERROR, 'A senha deve possuir pelo menos 6 caracteres')
+            return redirect('register')
 
         # Criação do usuário
         user = User.objects.create_user(username=username, email=email, password=password)
@@ -22,8 +39,8 @@ def registration(request):
         # Criação do perfil e associação com o usuário
         profile = Profile.objects.create(
             user=user,
+            nome=nome
         )
-
         # Salvar o perfil
         profile.save()
 
@@ -39,14 +56,22 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
+        try:
+            user = authenticate(request, username=User.objects.get(
+                email=username), password=password)
+
+        except:
+            user = authenticate(request, username=username, password=password)
+            
         if user is not None:
             login(request, user)
             return redirect('index')
+        
         elif request.user.is_authenticated:
             return redirect("loginpage")
+        
         else:
-            messages.error(request, "Credenciais Errada")
+            messages.error(request, "Email ou senha inválidos.")
             return render(request, 'login.html')
     else:
         return render(request, 'login.html')

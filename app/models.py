@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 class Profile(models.Model):
     equipe_ti = models.BooleanField(default=False)
+    nome = models.CharField(max_length=100, null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     
 class StatusChamado(models.TextChoices):

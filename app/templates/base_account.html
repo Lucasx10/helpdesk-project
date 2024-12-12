@@ -13,6 +13,7 @@
   <link href="{% static 'css/chartist.min.css' %}" rel="stylesheet" />
   <link href="{% static 'css/chartist-plugin-tooltip.css' %}" rel="stylesheet" />
   <link href="{% static 'css/style.min.css' %}" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   {% block extra_css %}{% endblock %}
 </head>
 
@@ -20,7 +21,17 @@
   <div class="main-wrapper">
     {% block content %}{% endblock %}
   </div>
-
+  <script>
+    function togglePassword() {
+      const passwordInput = document.getElementById('password');
+      const passwordIcon = document.getElementById('password-icon');
+      const isPasswordVisible = passwordInput.type === 'text';
+  
+      passwordInput.type = isPasswordVisible ? 'password' : 'text';
+      passwordIcon.classList.toggle('fa-eye');
+      passwordIcon.classList.toggle('fa-eye-slash');
+    }
+  </script>
   <script src="{% static 'js/jquery.min.js' %}"></script>
   <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'js/app-style-switcher.js' %}"></script>
