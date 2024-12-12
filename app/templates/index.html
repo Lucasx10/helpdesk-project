@@ -65,21 +65,49 @@
               </tbody>
           </table>
         </div>
-        <div class="pagination mt-4 align-items-center justify-content-center">
-            <span class="step-links">
-              {% if page_obj.has_previous %}
-                  <a href="?page={{ page_obj.previous_page_number }}">&laquo;anterior</a>
-              {% endif %}
-          
-              <span class="current">
-                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
-              </span>
-          
-              {% if page_obj.has_next %}
-                  <a href="?page={{ page_obj.next_page_number }}">próxima&raquo;</a>
-              {% endif %}
-            </span>
-          </div>
+
+        <!-- Paginação -->
+        <nav>
+          <ul class="pagination justify-content-center mt-4 mb-0">
+            <!-- Anterior -->
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo; Anterior</span>
+              </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1" aria-label="Previous">
+                <span aria-hidden="true">&laquo; Anterior</span>
+              </a>
+            </li>
+            {% endif %}
+
+            <!-- Números das páginas -->
+            {% for num in page_obj.paginator.page_range %}
+              <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+              </li>
+            {% endfor %}
+
+            <!-- Próxima -->
+            {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                <span aria-hidden="true">Próxima &raquo;</span>
+              </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">Próxima &raquo;</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+
       </div>
     </div>
   </div>

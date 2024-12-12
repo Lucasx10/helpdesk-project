@@ -78,10 +78,10 @@ def login_view(request):
 
 def index(request):
     # Obtendo todos os chamados, mas sem limitar diretamente na consulta
-    chamados_list = Chamados.objects.order_by('-created_at')
+    chamados_list = Chamados.objects.order_by('created_at')
     
     # Paginação - definindo o número de chamados por página
-    paginator = Paginator(chamados_list, 5)  # 5 chamados por página
+    paginator = Paginator(chamados_list, 10)  # 10 chamados por página
     
     # Pegando o número da página a partir da URL (parâmetro ?page=1)
     page_number = request.GET.get('page')

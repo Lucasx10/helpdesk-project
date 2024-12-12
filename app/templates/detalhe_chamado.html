@@ -106,7 +106,7 @@
             {% for comentario in chamado.comentarios.all %}
             <div class="d-flex flex-row comment-row">
               <div class="comment-text w-100">
-                <h6 class="font-medium">{{ comentario.usuario.username }}</h6>
+                <h4 class="font-medium">{{ comentario.usuario.username }}</h4>
                 <span class="m-b-15 d-block">{{ comentario.texto }}</span>
                 <span class="text-muted">{{ comentario.criado_em }}</span>
               </div>
