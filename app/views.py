@@ -93,7 +93,7 @@ def index(request):
 
 def chamado_by_id(request, chamado_id):
     chamado = get_object_or_404(Chamados, pk=chamado_id)
-     
+    equipe_ti = Profile.objects.filter(equipe_ti=True)  # Filtra apenas membros da equipe TI
     # Adicionar comentário
     if request.method == 'POST':
         comentario_form = ComentarioForm(request.POST)
@@ -108,6 +108,7 @@ def chamado_by_id(request, chamado_id):
 
     return render(request, 'detalhe_chamado.html', {
         'chamado': chamado,
+        'equipe_ti': equipe_ti,
         'comentario_form': comentario_form,
     })
 
@@ -127,22 +128,21 @@ def abrir_chamado(request):
         titulo = request.POST.get('titulo')
         descricao = request.POST.get('descricao')
         setor = request.POST.get('setor')
+        tipo_equipamento = request.POST.get('tipo_equipamento')
         user = request.user
    
         new_query = Chamados.objects.create(
             titulo=titulo,
             descricao=descricao,
             setor=setor,
-            user=user
+            user=user,
+            tipo_equipamento=tipo_equipamento
         )
         new_query.save()
         messages.success(request, "Chamado Aberto com sucesso!")
         return redirect("abrir_chamado")
     else:
         return render(request, 'abrir_chamado.html')
-
-def detalhe_chamado(request, chamado_id):
-    chamado = get_object_or_404(Chamados, id=chamado_id)
 
     
 @login_required(login_url='loginpage')
@@ -159,10 +159,34 @@ def editar_chamado(request, chamado_id):
                 chamado.status = novo_status
                 chamado.responsavel_ti = ti_chamado
                 chamado.save()
+                
+                # Adiciona mensagens para feedback ao usuário
+                messages.success(request, "Chamado atualizado com sucesso.")
                 return redirect('chamado_by_id', chamado_id=chamado.id)
 
     # Se o método não for POST, apenas renderize o template com o chamado
     return render(request, 'detalhe_chamado.html', {'chamado': chamado})
+
+
+@login_required
+def transferir_chamado(request, chamado_id):
+    if request.method == "POST":
+        chamado = get_object_or_404(Chamados, pk=chamado_id)
+        novo_responsavel_id = request.POST.get('responsavel_ti')
+        
+        try:
+            novo_responsavel = User.objects.get(pk=novo_responsavel_id)
+            chamado.responsavel_ti = novo_responsavel
+            chamado.save()
+            
+            messages.success(request, "Chamado transferido com sucesso!")
+        except User.DoesNotExist:
+            messages.error(request, "O responsável selecionado não existe.")
+        
+        return redirect('chamado_by_id', chamado_id=chamado.id)
+    else:
+        messages.error(request, "Método inválido.")
+        return redirect('index')
 
 @login_required(login_url='loginpage')
 def confirmar_finalizacao(request, chamado_id):
@@ -187,3 +211,6 @@ def confirmar_finalizacao(request, chamado_id):
             return redirect('chamado_by_id', chamado_id=chamado.id)
 
     return render(request, 'detalhe_chamado.html', {'chamado': chamado})
+
+def custom_handler404(request, exception=None):
+    return render(request, 'error-404.html')

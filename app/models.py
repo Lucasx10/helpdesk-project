@@ -17,6 +17,7 @@ class Chamados(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='chamados_abertos')
     status = models.CharField(max_length=25, choices=StatusChamado.choices, default=StatusChamado.ABERTO)
     descricao = models.TextField()
+    tipo_equipamento = models.CharField(max_length=50, null=True, blank=True)
     setor = models.CharField(max_length=50)
     
     # Responsável TI (será preenchido quando um usuário de TI aceitar o chamado)

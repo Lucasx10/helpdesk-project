@@ -1,5 +1,6 @@
 from django.urls import path, include
 from .views import *
+
 urlpatterns = [
     path('home', index, name='index'),
     path("register", register, name="register"),
@@ -11,5 +12,6 @@ urlpatterns = [
     path("chamado", chamado, name="chamado"),
     path("logout", signout, name="logout"),
     path("editar_chamado/<int:chamado_id>", editar_chamado, name="editar_chamado"),
+    path('chamado/<int:chamado_id>/transferir/', transferir_chamado, name='transferir_chamado'),
     path('confirmar_finalizacao/<int:chamado_id>/', confirmar_finalizacao, name='confirmar_finalizacao'),
 ]

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %} Chamado #{{ chamado.id }} {% endblock %}
+{% load static %}
 
 {% block content %}
 <div class="row">
@@ -44,11 +45,19 @@
               </tr>
               <tr>
                 <td>Usuário</td>
-                <td>{{ chamado.user }}</td>
+                <td>{{ chamado.user.profile.nome }}</td>
               </tr>
               <tr>
                 <td>Descrição</td>
                 <td>{{ chamado.descricao }}</td>
+              </tr>
+              <tr>
+                <td>Marca/Modelo</td>
+                {% if chamado.tipo_equipamento is None %}
+                  <td>N/A</td>
+                {% else %}
+                  <td>{{ chamado.tipo_equipamento }}</td>
+                {% endif %}
               </tr>
               <tr>
                 <td>Criado em</td>
@@ -61,14 +70,14 @@
               {% if chamado.status != 'Aberto' %}
               <tr>
                 <td>Responsável TI</td>
-                <td>{{ chamado.responsavel_ti }}</td>
+                <td>{{ chamado.responsavel_ti.profile.nome }}</td>
               </tr>
               {% endif %}
             </tbody>
           </table>
         </div>
 
-        {% if user.profile.equipe_ti %}
+        {% if user == chamado.responsavel_ti %}
           {% if chamado.status == 'Aberto' %}
           <form action="{% url 'editar_chamado' chamado.id %}" method="POST">
             {% csrf_token %}
@@ -80,6 +89,36 @@
             {% csrf_token %}
             <input type="hidden" name="status" value="Pendente">
             <button class="btn btn-success mt-3" type="submit">Finalizar Chamado</button>
+          </form>
+          <form action="{% url 'transferir_chamado' chamado.id %}" method="POST">
+            {% csrf_token %}
+            <button type="button" class="btn btn-info mt-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              Transferir Chamado
+            </button>            
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Transferir Chamado</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                      <div class="mb-3">
+                        <label for="responsavel-tipo-select" class="col-form-label">Responsável TI:</label>
+                        <select id="responsavel-tipo-select" name="responsavel_ti" class="form-select">
+                          {% for profile in equipe_ti %}
+                            <option value="{{ profile.user.id }}">{{ profile.nome }}</option>
+                          {% endfor %}
+                        </select>                        
+                      </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button class="btn btn-info" type="submit">Transferir</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </form>
           {% endif %}
         {% endif %}
@@ -104,13 +143,16 @@
           <h4>Comentários</h4>
           <div class="comment-widgets">
             {% for comentario in chamado.comentarios.all %}
-            <div class="d-flex flex-row comment-row">
-              <div class="comment-text w-100">
-                <h4 class="font-medium">{{ comentario.usuario.username }}</h4>
-                <span class="m-b-15 d-block">{{ comentario.texto }}</span>
-                <span class="text-muted">{{ comentario.criado_em }}</span>
+              <div class="d-flex flex-row comment-row">
+                <div class="p-2">
+                  <img src="{% static 'profile.jpg' %}" alt="user" width="50" class="rounded-circle" />
+                </div>
+                <div class="comment-text w-100">
+                  <h4 class="font-medium">{{ comentario.usuario.profile.nome }}</h4>
+                  <span class="m-b-15 d-block">{{ comentario.texto }}</span>
+                  <span class="text-muted">{{ comentario.criado_em }}</span>
+                </div>
               </div>
-            </div>
             {% empty %}
             <p>Não há comentários ainda.</p>
             {% endfor %}
@@ -128,4 +170,12 @@
     </div>
   </div>
 </div>
+<script>
+  const exampleModal = document.getElementById('exampleModal')
+  exampleModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget
+    const recipient = button.getAttribute('data-bs-whatever')
+    const modalTitle = exampleModal.querySelector('.modal-title')
+  })
+</script>
 {% endblock %}
