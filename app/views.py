@@ -6,6 +6,12 @@ from django.contrib.auth.decorators import login_required
 from .forms import ComentarioForm
 from django.contrib.messages import constants
 from django.core.paginator import Paginator
+from datetime import timedelta
+
+def loginpage(request):
+    if request.user.is_authenticated:  # Verifica se o usuário já está autenticado
+        return redirect('index')
+    return render(request, "login.html")
 
 # Create your views here.
 def register(request):
@@ -50,32 +56,39 @@ def registration(request):
     return render(request, 'register.html')
 
 def loginpage(request):
+    if request.user.is_authenticated:  # Verifica se o usuário já está autenticado
+        return redirect('index')
     return render(request, "login.html")
+
 
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        remember_me = request.POST.get('remember')  # Captura o valor do checkbox "Lembrar-me"
+        
         try:
-            user = authenticate(request, username=User.objects.get(
-                email=username), password=password)
-
+            user = authenticate(request, username=User.objects.get(email=username), password=password)
         except:
             user = authenticate(request, username=username, password=password)
-            
+        
         if user is not None:
             login(request, user)
+            
+            # Configura a duração da sessão se "Lembrar-me" estiver ativado
+            if remember_me:
+                request.session.set_expiry(5 * 24 * 60 * 60)  # 5 dias em segundos
+            else:
+                request.session.set_expiry(0)  # Sessão termina ao fechar o navegador
+            
             return redirect('index')
-        
-        elif request.user.is_authenticated:
-            return redirect("loginpage")
-        
         else:
             messages.error(request, "Email ou senha inválidos.")
             return render(request, 'login.html')
     else:
         return render(request, 'login.html')
 
+@login_required(login_url='loginpage')
 def index(request):
     # Obtendo todos os chamados, mas sem limitar diretamente na consulta
     chamados_list = Chamados.objects.order_by('created_at')
@@ -90,7 +103,7 @@ def index(request):
     # Passando o page_obj para o template
     return render(request, 'index.html', {'page_obj': page_obj})
 
-
+@login_required(login_url='loginpage')
 def chamado_by_id(request, chamado_id):
     chamado = get_object_or_404(Chamados, pk=chamado_id)
     equipe_ti = Profile.objects.filter(equipe_ti=True)  # Filtra apenas membros da equipe TI

@@ -27,6 +27,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Configuração para permitir cookies de sessão persistentes
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Padrão: armazena sessões no banco de dados
+SESSION_COOKIE_AGE = 5 * 24 * 60 * 60   # 5 dias de persistência por padrão
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Manter a sessão mesmo se o navegador fechar
+SESSION_SAVE_EVERY_REQUEST = True  # Atualizar o tempo de expiração a cada requisição
+
 
 # Application definition
 
