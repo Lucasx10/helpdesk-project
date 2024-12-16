@@ -165,7 +165,7 @@ def editar_chamado(request, chamado_id):
     # Verificar se o usuário tem permissão para atender ou finalizar o chamado
     if request.user.profile.equipe_ti:
         if request.method == 'POST':
-            # Modificar o status do chamado com base no valor enviado
+            # Modifica o status do chamado com base no valor enviado
             novo_status = request.POST.get('status')
             ti_chamado = request.user
             if novo_status:
