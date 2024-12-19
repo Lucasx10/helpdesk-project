@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-g57uh@1!=y7h55wk9qi6wwn!oxh+@mql#w230irtxoh)p#riq)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Configuração para permitir cookies de sessão persistentes
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Padrão: armazena sessões no banco de dados
