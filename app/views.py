@@ -99,8 +99,13 @@ def login_view(request):
 
 @login_required(login_url='loginpage')
 def index(request):
-    # Obtendo todos os chamados, mas sem limitar diretamente na consulta
-    chamados_list = Chamados.objects.order_by('created_at')
+    # Filtra os chamados com base no tipo de usuário
+    if request.user.profile.equipe_ti:
+        # Se o usuário for da equipe TI, mostra todos os chamados
+        chamados_list = Chamados.objects.order_by('created_at')
+    else:
+        # Se o usuário for comum, mostra apenas os chamados que ele abriu
+        chamados_list = Chamados.objects.filter(user=request.user).order_by('created_at')
     
     # Paginação - definindo o número de chamados por página
     paginator = Paginator(chamados_list, 10)  # 10 chamados por página
@@ -116,6 +121,7 @@ def index(request):
         })
 
     return render(request, 'index.html', {'page_obj': page_obj})
+
 
 @login_required(login_url='loginpage')
 def chamado_by_id(request, chamado_id):
