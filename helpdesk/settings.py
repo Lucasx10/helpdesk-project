@@ -37,14 +37,21 @@ SESSION_SAVE_EVERY_REQUEST = True  # Atualizar o tempo de expiração a cada req
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'app',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app',
 ]
+
+ASGI_APPLICATION = 'helpdesk.asgi.application'
+CHANNEL_LAYERS = {
+    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"},
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -75,7 +82,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'helpdesk.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

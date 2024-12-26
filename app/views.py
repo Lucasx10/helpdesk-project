@@ -1,12 +1,19 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import User, Profile, Chamados
+from .models import User, Profile, Chamados, Comentarios
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import ComentarioForm
 from django.contrib.messages import constants
 from django.core.paginator import Paginator
-from datetime import timedelta
+from datetime import datetime, timedelta
+from django.shortcuts import render
+from django.db.models import Count
+from django.db.models.functions import ExtractMonth
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 def loginpage(request):
     if request.user.is_authenticated:  # Verifica se o usuário já está autenticado
@@ -80,8 +87,10 @@ def login_view(request):
                 request.session.set_expiry(5 * 24 * 60 * 60)  # 5 dias em segundos
             else:
                 request.session.set_expiry(0)  # Sessão termina ao fechar o navegador
-            
-            return redirect('index')
+            if request.user.is_superuser:
+                return redirect('admin')
+            else:
+                return redirect('index')
         else:
             messages.error(request, "Email ou senha inválidos.")
             return render(request, 'login.html')
@@ -100,7 +109,12 @@ def index(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Passando o page_obj para o template
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Retorna somente o conteúdo da lista de chamados para atualização
+        return JsonResponse({
+            'html': render_to_string('index.html', {'page_obj': page_obj})
+        })
+
     return render(request, 'index.html', {'page_obj': page_obj})
 
 @login_required(login_url='loginpage')
@@ -115,6 +129,16 @@ def chamado_by_id(request, chamado_id):
             comentario.chamado = chamado
             comentario.usuario = request.user
             comentario.save()
+            
+            # Notifique o grupo "chamados"
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                'chamados',
+                {
+                    'type': 'send_update',
+                    'message': f'Novo comentário no chamado: N°{chamado.id}',
+                }
+            )
             return redirect('chamado_by_id', chamado_id=chamado.id)
     else:
         comentario_form = ComentarioForm()
@@ -152,6 +176,16 @@ def abrir_chamado(request):
             tipo_equipamento=tipo_equipamento
         )
         new_query.save()
+        
+        # Notifique o grupo "chamados"
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'chamados',
+            {
+                'type': 'send_update',
+                'message': f'Novo chamado foi criado: {titulo}/{setor}',
+            }
+        )
         messages.success(request, "Chamado Aberto com sucesso!")
         return redirect("abrir_chamado")
     else:
@@ -227,3 +261,25 @@ def confirmar_finalizacao(request, chamado_id):
 
 def custom_handler404(request, exception=None):
     return render(request, 'error-404.html')
+
+def admin_dashboard_view(request):
+    # Processar dados: calcular quantidade de chamados por mês
+    chamados_por_mes = (
+        Chamados.objects.filter(created_at__range=[datetime.now().date()])  # Filtra pelo ano desejado
+        .annotate(month=ExtractMonth('created_at'))    # Extrai o mês
+        .values('month')                         # Agrupa por mês
+        .annotate(total=Count('id'))             # Conta os chamados
+        .order_by('month')                       # Ordena por mês
+    )
+
+    # Preparar dados para o gráfico
+    meses = [d['data_aberta__data'].strftime("%d-%m-%Y") for d in chamados_por_mes]
+    quantidades = [d.get('total') for d in chamados_por_mes]
+    
+    print (chamados_por_mes)
+
+    context = {
+        'meses': meses,  # Passa os meses
+        'quantidades': quantidades,  # Passa as quantidades
+    }
+    return render(request, 'admin.html', context)
