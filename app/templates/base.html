@@ -145,37 +145,80 @@
 
   <script>
     const socket = new WebSocket('ws://' + window.location.host + '/ws/chamados/');
-  
-    socket.onmessage = function(event) {
-      const data = JSON.parse(event.data);
-      const message = data.message;
 
-      location.reload();
-  
-      // Atualiza o ícone e a quantidade de notificações
-      const notificationCount = document.getElementById('notification-count');
-      notificationCount.style.display = 'inline';
-      notificationCount.textContent = "1"; // Atualiza o contador de notificações
-  
-      // Adiciona a mensagem ao dropdown de notificações
-      const notificationList = document.getElementById('notificationList');
-      const newNotification = document.createElement('li');
-      newNotification.classList.add('dropdown-item');
-      newNotification.textContent = message;  // A mensagem recebida
-  
-      // Adiciona a nova notificação à lista
-      notificationList.appendChild(newNotification);
-  
-      // Caso o dropdown já tenha o texto "Nenhuma notificação", vamos removê-lo
-      if (notificationList.querySelector('.text-center')) {
-        notificationList.querySelector('.text-center').remove();
-      }
+    // Função para restaurar notificações armazenadas
+    function restoreNotifications() {
+        const storedNotifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+        const notificationList = document.getElementById('notificationList');
+        
+        // Remove o texto padrão "Nenhuma notificação" se houver notificações
+        if (storedNotifications.length > 0 && notificationList.querySelector('.text-center')) {
+            notificationList.querySelector('.text-center').remove();
+        }
+
+        storedNotifications.forEach((message, index) => {
+            const newNotification = document.createElement('li');
+            newNotification.classList.add('dropdown-item', 'notification-item');
+            newNotification.style.cursor = "pointer"
+            newNotification.textContent = message;
+            newNotification.dataset.index = index; // Salva o índice para fácil manipulação
+            
+            // Adiciona o evento de clique para remover a notificação
+            newNotification.onclick = function () {
+                removeNotification(index);
+            };
+
+            notificationList.appendChild(newNotification);
+        });
+
+        updateNotificationCount(storedNotifications.length);
+    }
+
+    // Função para remover uma notificação
+    function removeNotification(index) {
+        const storedNotifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+        
+        // Remove a notificação pelo índice
+        storedNotifications.splice(index, 1);
+        sessionStorage.setItem('notifications', JSON.stringify(storedNotifications));
+
+        // Atualiza a lista de notificações e o contador
+        restoreNotifications();
+    }
+
+    // Função para atualizar o contador de notificações
+    function updateNotificationCount(count) {
+        const notificationCount = document.getElementById('notification-count');
+        if (count > 0) {
+            notificationCount.style.display = 'inline';
+            notificationCount.textContent = count;
+        } else {
+            notificationCount.style.display = 'none';
+        }
+    }
+
+    // Restaura notificações quando a página é carregada
+    window.onload = restoreNotifications;
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        const message = data.message;
+
+        // Salva a notificação no sessionStorage
+        const storedNotifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
+        storedNotifications.push(message);
+        sessionStorage.setItem('notifications', JSON.stringify(storedNotifications));
+
+        // Recarrega a página
+        location.reload();
     };
-  
+
     socket.onclose = function(event) {
-      console.error('WebSocket fechado inesperadamente.');
+        console.error('WebSocket fechado inesperadamente.');
     };
   </script>
+  
+  
   
 </body>
 
