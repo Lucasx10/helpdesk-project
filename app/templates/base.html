@@ -149,6 +149,8 @@
     socket.onmessage = function(event) {
       const data = JSON.parse(event.data);
       const message = data.message;
+
+      location.reload();
   
       // Atualiza o ícone e a quantidade de notificações
       const notificationCount = document.getElementById('notification-count');
