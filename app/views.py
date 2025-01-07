@@ -62,12 +62,6 @@ def registration(request):
 
     return render(request, 'register.html')
 
-def loginpage(request):
-    if request.user.is_authenticated:  # Verifica se o usuário já está autenticado
-        return redirect('index')
-    return render(request, "login.html")
-
-
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -99,7 +93,12 @@ def login_view(request):
 
 @login_required(login_url='loginpage')
 def index(request):
-    # Filtra os chamados com base no tipo de usuário
+    # Verifica se o perfil do usuário existe antes de acessar
+    if not hasattr(request.user, 'profile'):
+        messages.error(request, "Usuário não possui perfil associado.")
+        return redirect('loginpage')  # Ou outra página de erro ou redirecionamento
+    
+    # Agora você pode acessar o perfil sem problemas
     if request.user.profile.equipe_ti:
         # Se o usuário for da equipe TI, mostra todos os chamados
         chamados_list = Chamados.objects.order_by('created_at')
@@ -213,6 +212,16 @@ def editar_chamado(request, chamado_id):
                 chamado.responsavel_ti = ti_chamado
                 chamado.save()
                 
+                        # Notifique o grupo "chamados"
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    'chamados',
+                    {
+                        'type': 'send_update',
+                        'message': 'Status alterado',
+                    }
+                )
+                
                 # Adiciona mensagens para feedback ao usuário
                 messages.success(request, "Chamado atualizado com sucesso.")
                 return redirect('chamado_by_id', chamado_id=chamado.id)
@@ -250,6 +259,14 @@ def confirmar_finalizacao(request, chamado_id):
         return redirect('chamado_by_id', chamado_id=chamado.id)
     
     if request.method == 'POST':
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+                    'chamados',
+                    {
+                        'type': 'send_update',
+                        'message': 'Status alterado',
+                    }
+        )
         # O usuário confirmou a finalização
         if 'confirmar' in request.POST:
             chamado.status = 'Concluído'
@@ -268,24 +285,3 @@ def confirmar_finalizacao(request, chamado_id):
 def custom_handler404(request, exception=None):
     return render(request, 'error-404.html')
 
-def admin_dashboard_view(request):
-    # Processar dados: calcular quantidade de chamados por mês
-    chamados_por_mes = (
-        Chamados.objects.filter(created_at__range=[datetime.now().date()])  # Filtra pelo ano desejado
-        .annotate(month=ExtractMonth('created_at'))    # Extrai o mês
-        .values('month')                         # Agrupa por mês
-        .annotate(total=Count('id'))             # Conta os chamados
-        .order_by('month')                       # Ordena por mês
-    )
-
-    # Preparar dados para o gráfico
-    meses = [d['data_aberta__data'].strftime("%d-%m-%Y") for d in chamados_por_mes]
-    quantidades = [d.get('total') for d in chamados_por_mes]
-    
-    print (chamados_por_mes)
-
-    context = {
-        'meses': meses,  # Passa os meses
-        'quantidades': quantidades,  # Passa as quantidades
-    }
-    return render(request, 'admin.html', context)

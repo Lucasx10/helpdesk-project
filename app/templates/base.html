@@ -210,6 +210,11 @@
     socket.onmessage = function (event) {
       const data = JSON.parse(event.data);
       const message = data.message;
+
+      if (message.includes('Status alterado')) { // Ajuste conforme o tipo de mensagem que seu sistema envia
+        // Recarrega a página para atualizar o status dos chamados
+        location.reload();
+      }
   
       // Salva a notificação no sessionStorage
       const storedNotifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
