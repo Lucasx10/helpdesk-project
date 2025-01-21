@@ -63,10 +63,10 @@ deactivate
 ## Instalar as Dependências
 Como Instalar Pacotes em um Ambiente Virtual
 
-Com o ambiente virtual ativado, você pode instalar pacotes e bibliotecas específicos para o seu projeto sem afetar o ambiente global do Python. Use o comando pip para instalar pacote django:
+Com o ambiente virtual ativado, você pode instalar pacotes e bibliotecas específicos para o seu projeto sem afetar o ambiente global do Python. Use o comando pip para instalar as dependências:
 
 ```bash
-pip install Django
+pip install -r requirements.txt
 ```
 
 ## Executar o Projeto
