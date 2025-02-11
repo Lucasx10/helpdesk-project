@@ -26,30 +26,74 @@
                     </div>
                     <form action="{% url 'abrir_chamado' %}" method="post" class="form-horizontal form-material mx-2">
                         {% csrf_token %}
+
+                        <!-- Escolha do Tipo de Chamado -->
                         <div class="form-group">
-                            <label for="titulo" class="col-md-12">Título do Chamado</label>
+                            <label for="tipo_chamado" class="col-md-12">Tipo de Chamado</label>
                             <div class="col-md-12">
-                                <input type="text" id="titulo" name="titulo" class="form-control form-control-line" placeholder="Digite o título do chamado" required>
+                                <select id="tipo_chamado" name="tipo_chamado" class="form-select form-control-line" onchange="mostrarCampos()">
+                                    <option value="normal">Chamado</option>
+                                    <option value="sei">Cadastro no SEI</option>
+                                </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="setor" class="col-md-12">Setor</label>
-                            <div class="col-md-12">
-                                <input type="text" id="setor" name="setor" class="form-control form-control-line" placeholder="Digite o setor" required>
+
+                        <!-- Campos para Chamado Normal -->
+                        <div id="campos_normais">
+                            <div class="form-group">
+                                <label for="titulo" class="col-md-12">Título do Chamado</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="titulo" name="titulo" class="form-control form-control-line" placeholder="Digite o título do chamado" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="setor" class="col-md-12">Setor</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="setor" name="setor" class="form-control form-control-line" placeholder="Digite o setor" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="tipo_equipamento" class="col-md-12">Marca/Modelo Equipamento (Opcional)</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="tipo_equipamento" name="tipo_equipamento" class="form-control form-control-line" placeholder="Digite a Marca ou modelo do equipamento">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="descricao" class="col-md-12">Descrição</label>
+                                <div class="col-md-12">
+                                    <textarea id="descricao" name="descricao" rows="5" class="form-control form-control-line" placeholder="Digite a descrição do problema" required></textarea>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="tipo_equipamento" class="col-md-12">Marca/Modelo Equipamento (Opcional)</label>
-                            <div class="col-md-12">
-                                <input type="text" id="" name="tipo_equipamento" class="form-control form-control-line" placeholder="Digite a Marca ou modelo do equipamento">
+
+                        <!-- Campos para Cadastro no SEI -->
+                        <div id="campos_sei" style="display: none;">
+                            <div class="form-group">
+                                <label for="nome_usuario" class="col-md-12">Nome do Usuário</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="nome_usuario" name="nome_usuario" class="form-control form-control-line" placeholder="Nome completo">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cpf" class="col-md-12">CPF</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="cpf" name="cpf" class="form-control form-control-line" placeholder="Digite o CPF">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="email" class="col-md-12">E-mail</label>
+                                <div class="col-md-12">
+                                    <input type="email" id="email" name="email" class="form-control form-control-line" placeholder="Digite o e-mail">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="setor_solicitante" class="col-md-12">Setor Solicitante</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="setor_solicitante" name="setor_solicitante" class="form-control form-control-line" placeholder="Digite o setor solicitante">
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="descricao" class="col-md-12">Descrição</label>
-                            <div class="col-md-12">
-                                <textarea id="descricao" name="descricao" rows="5" class="form-control form-control-line" placeholder="Digite a descrição do problema" required></textarea>
-                            </div>
-                        </div>
+
                         <div class="form-group">
                             <div class="col-sm-12">
                                 <button type="submit" class="btn btn-success text-white">
@@ -62,4 +106,13 @@
         </div>
     </div>
 </div>
+
+<script>
+function mostrarCampos() {
+    var tipo = document.getElementById("tipo_chamado").value;
+    document.getElementById("campos_normais").style.display = (tipo === "normal") ? "block" : "none";
+    document.getElementById("campos_sei").style.display = (tipo === "sei") ? "block" : "none";
+}
+</script>
+
 {% endblock %}
