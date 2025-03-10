@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Chamados Concluídos{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-md-flex">
+          <div>
+            <h4 class="card-title">Chamados Concluídos</h4>
+            <h5 class="card-subtitle mb-4">
+              Lista de chamados que foram resolvidos.
+            </h5>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table mb-0 table-hover align-middle text-nowrap">
+            <thead>
+              <tr>
+                <th class="border-top-0"><h5>Chamado</h5></th>
+                <th class="border-top-0"><h5>Título</h5></th>
+                <th class="border-top-0"><h5>Usuário</h5></th>
+                <th class="border-top-0"><h5>Setor</h5></th>
+                <th class="border-top-0"><h5>Criado</h5></th>
+                <th class="border-top-0"><h5>Última Atualização</h5></th>
+                <th class="border-top-0"><h5>Status</h5></th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for chamado in page_obj.object_list %}
+                <tr>
+                  <td>
+                    <a href="/chamado/{{ chamado.id }}" class="btn btn-circle btn-primary text-white">
+                      {{ chamado.id }}
+                    </a>
+                  </td>
+                  <td>{{ chamado.titulo }}</td>
+                  <td>{{ chamado.user }}</td>
+                  <td>{{ chamado.setor }}</td>
+                  <td>{{ chamado.created_at }}</td>
+                  <td>{{ chamado.updated_at }}</td>
+                  <td><label class="badge bg-success">{{ chamado.status }}</label></td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center">Nenhum chamado concluído encontrado.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+          </table>
+        </div>
+        <!-- Paginação -->
+        <nav>
+            <ul class="pagination justify-content-center mt-4 mb-0">
+              <!-- Anterior -->
+              {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                  <span aria-hidden="true">&laquo; Anterior</span>
+                </a>
+              </li>
+              {% else %}
+              <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-label="Previous">
+                  <span aria-hidden="true">&laquo; Anterior</span>
+                </a>
+              </li>
+              {% endif %}
+  
+              <!-- Números das páginas -->
+              {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+              {% endfor %}
+  
+              <!-- Próxima -->
+              {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                  <span aria-hidden="true">Próxima &raquo;</span>
+                </a>
+              </li>
+              {% else %}
+              <li class="page-item disabled">
+                <a class="page-link" href="#" aria-label="Next">
+                  <span aria-hidden="true">Próxima &raquo;</span>
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -98,13 +98,12 @@ def index(request):
         messages.error(request, "Usuário não possui perfil associado.")
         return redirect('loginpage')  # Ou outra página de erro ou redirecionamento
     
-    # Agora você pode acessar o perfil sem problemas
     if request.user.profile.equipe_ti:
-        # Se o usuário for da equipe TI, mostra todos os chamados
-        chamados_list = Chamados.objects.order_by('created_at')
+        # Se o usuário for da equipe TI, mostra todos os chamados menos os concluidos
+        chamados_list = Chamados.objects.exclude(status="Concluído").order_by('created_at')
     else:
-        # Se o usuário for comum, mostra apenas os chamados que ele abriu
-        chamados_list = Chamados.objects.filter(user=request.user).order_by('created_at')
+        # Se o usuário for comum, mostra apenas os chamados que ele abriu menos os concluidos
+        chamados_list = Chamados.objects.filter(user=request.user).exclude(status="Concluído").order_by('created_at')
     
     # Paginação - definindo o número de chamados por página
     paginator = Paginator(chamados_list, 10)  # 10 chamados por página
@@ -120,6 +119,18 @@ def index(request):
         })
 
     return render(request, 'index.html', {'page_obj': page_obj})
+
+@login_required(login_url='loginpage')
+def chamados_concluidos(request):
+    # Acessar os chamados concluidos
+    if request.user.profile.equipe_ti:
+        chamados = Chamados.objects.filter(status="Concluído").order_by('-updated_at')
+    else:
+        chamados = Chamados.objects.filter(user=request.user, status="Concluído").order_by('-updated_at')
+    paginator = Paginator(chamados, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    return render(request, "chamados_concluidos.html", {"page_obj": page_obj})
 
 
 @login_required(login_url='loginpage')
@@ -218,7 +229,7 @@ def editar_chamado(request, chamado_id):
                     'chamados',
                     {
                         'type': 'send_update',
-                        'message': 'Status alterado',
+                        'message': f'Status do chamado N°{chamado.id} alterado',
                     }
                 )
                 
@@ -264,7 +275,7 @@ def confirmar_finalizacao(request, chamado_id):
                     'chamados',
                     {
                         'type': 'send_update',
-                        'message': 'Status alterado',
+                        'message': f'Status do chamado N°{chamado.id} alterado para Conluído',
                     }
         )
         # O usuário confirmou a finalização
