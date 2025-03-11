@@ -134,7 +134,7 @@ def chamados_concluidos(request):
 
 
 @login_required(login_url='loginpage')
-def chamado_by_id(request, chamado_id):
+def chamado_by_id(request, chamado_id): # detalhe chamados
     chamado = get_object_or_404(Chamados, pk=chamado_id)
     equipe_ti = Profile.objects.filter(equipe_ti=True)  # Filtra apenas membros da equipe TI
     # Adicionar comentário
