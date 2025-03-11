@@ -89,3 +89,7 @@ Por fim, inicie o servidor de desenvolvimento com o comando:
 python manage.py runserver
 ```
 O sistema estará disponível em http://localhost:8000.
+
+## Video Tutorial
+
+[https://github.com/Lucasx10/helpdesk-project/releases/download/main/Tutorial.HelpDesk.mp4](https://github.com/user-attachments/assets/0daae3c4-e8f7-41c4-9a57-4a55ccdb9387)
