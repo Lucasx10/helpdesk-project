@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import User, Profile, Chamados, Comentarios
+from .models import User, Profile, Chamados, Comentarios, Avaliacao
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -91,34 +91,32 @@ def login_view(request):
     else:
         return render(request, 'login.html')
 
+from django.core.cache import cache
+
 @login_required(login_url='loginpage')
 def index(request):
-    # Verifica se o perfil do usuário existe antes de acessar
-    if not hasattr(request.user, 'profile'):
-        messages.error(request, "Usuário não possui perfil associado.")
-        return redirect('loginpage')  # Ou outra página de erro ou redirecionamento
-    
+    # Verifica se o usuário já visualizou a mensagem
+    mensagem_exibida = request.session.get('mensagem_exibida', False)
+
+    if not mensagem_exibida:
+        mensagem_ti = "Informamos que, devido a problemas de internet no estado, ficamos sem acesso à internet, agradecemos a compreensão de todos!"
+    else:
+        mensagem_ti = None  # Não envia a mensagem se já foi exibida
+
     if request.user.profile.equipe_ti:
-        # Se o usuário for da equipe TI, mostra todos os chamados menos os concluidos
         chamados_list = Chamados.objects.exclude(status="Concluído").order_by('created_at')
     else:
-        # Se o usuário for comum, mostra apenas os chamados que ele abriu menos os concluidos
         chamados_list = Chamados.objects.filter(user=request.user).exclude(status="Concluído").order_by('created_at')
-    
-    # Paginação - definindo o número de chamados por página
-    paginator = Paginator(chamados_list, 10)  # 10 chamados por página
-    
-    # Pegando o número da página a partir da URL (parâmetro ?page=1)
+
+    paginator = Paginator(chamados_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Retorna somente o conteúdo da lista de chamados para atualização
-        return JsonResponse({
-            'html': render_to_string('index.html', {'page_obj': page_obj})
-        })
-
-    return render(request, 'index.html', {'page_obj': page_obj})
+    return render(request, 'index.html', {
+        'page_obj': page_obj,
+        'mensagem_ti': mensagem_ti,
+        'mensagem_exibida': mensagem_exibida,
+    })
 
 @login_required(login_url='loginpage')
 def chamados_concluidos(request):
@@ -177,35 +175,79 @@ def chamado(request):
 
 @login_required(login_url='loginpage')
 def abrir_chamado(request):
+    titulo = None  # Inicialize as variáveis
+    setor = None
+    
     if request.method == 'POST':
-        titulo = request.POST.get('titulo')
-        descricao = request.POST.get('descricao')
-        setor = request.POST.get('setor')
-        tipo_equipamento = request.POST.get('tipo_equipamento')
-        user = request.user
-   
-        new_query = Chamados.objects.create(
-            titulo=titulo,
-            descricao=descricao,
-            setor=setor,
-            user=user,
-            tipo_equipamento=tipo_equipamento
-        )
-        new_query.save()
+        tipo_chamado = request.POST.get('tipo_chamado')
+
+        # Para chamado normal
+        if tipo_chamado == 'normal':
+            titulo = request.POST.get('titulo')
+            descricao = request.POST.get('descricao')
+            setor = request.POST.get('setor')
+            tipo_equipamento = request.POST.get('tipo_equipamento', '')  # Campo opcional
+
+            chamado = Chamados.objects.create(
+                user=request.user,
+                titulo=titulo,
+                descricao=descricao,
+                setor=setor,
+                tipo_equipamento=tipo_equipamento,
+                status='Aberto',  # Definir o status como "Aberto" ao criar
+            )
+            chamado.save()
         
-        # Notifique o grupo "chamados"
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            'chamados',
-            {
-                'type': 'send_update',
-                'message': f'Novo chamado foi criado: {titulo}/{setor}',
-            }
-        )
+        # Para solicitar resma de papel
+        elif tipo_chamado == 'papel':
+            quantidade_resma = request.POST.get('quantidade_resma')
+            setor_papel = request.POST.get('setor_papel')
+
+            chamado = Chamados.objects.create(
+                user=request.user,
+                titulo="Solicito Resma de Papel",
+                quantidade_resma=quantidade_resma,
+                setor=setor_papel,
+                status='Aberto',
+            )
+            chamado.save()
+            titulo = tipo_chamado  # Defina o título para envio
+
+            setor = setor_papel  # Defina o setor para envio
+        
+        # Para solicitar tonner
+        elif tipo_chamado == 'tonner':
+            tipo_impressora = request.POST.get('tipo_impressora')
+            setor_tonner = request.POST.get('setor_tonner')
+
+            chamado = Chamados.objects.create(
+                user=request.user,
+                titulo="Solicito Tonner impressora",
+                tipo_equipamento=tipo_impressora,
+                setor=setor_tonner,
+                status='Aberto',
+            )
+            chamado.save()
+            titulo = tipo_chamado  # Defina o título para envio
+            setor = setor_tonner  # Defina o setor para envio
+        
+        # Verifique se o título e o setor estão definidos antes de enviar a mensagem
+        if titulo and setor:
+            # Notifique o grupo "chamados"
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                'chamados',
+                {
+                    'type': 'send_update',
+                    'message': f'Novo chamado foi criado: {titulo}/{setor}',
+                }
+            )
+        
         messages.success(request, "Chamado Aberto com sucesso!")
         return redirect("abrir_chamado")
     else:
         return render(request, 'abrir_chamado.html')
+
 
     
 @login_required(login_url='loginpage')
@@ -266,33 +308,64 @@ def confirmar_finalizacao(request, chamado_id):
     chamado = get_object_or_404(Chamados, id=chamado_id)
 
     if chamado.user != request.user:
-        # O usuário que está tentando confirmar não é o dono do chamado
         return redirect('chamado_by_id', chamado_id=chamado.id)
     
     if request.method == 'POST':
+        confirmacao = request.POST.get('confirmacao')  # Obtém se foi confirmado ou não
+        nota = request.POST.get("avaliacao")
+        comentario = request.POST.get("comentario", "")
+
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-                    'chamados',
-                    {
-                        'type': 'send_update',
-                        'message': f'Status do chamado N°{chamado.id} alterado para Conluído',
-                    }
+            'chamados',
+            {
+                'type': 'send_update',
+                'message': f'Status do chamado N°{chamado.id} alterado.',
+            }
         )
-        # O usuário confirmou a finalização
-        if 'confirmar' in request.POST:
-            chamado.status = 'Concluído'
-            chamado.save()
-            messages.success(request, "Chamado finalizado com sucesso!")
-            return redirect('chamado_by_id', chamado_id=chamado.id)
-        # O usuário não confirmou, então o chamado permanece em andamento
-        elif 'nao_confirmar' in request.POST:
+
+        if confirmacao == 'sim':  # Se o usuário confirmou a finalização
+            if nota:  # Se já houver uma avaliação, salva
+                avaliacao, created = Avaliacao.objects.get_or_create(chamado=chamado, usuario=request.user)
+                avaliacao.nota = int(nota)
+                avaliacao.comentario = comentario
+                avaliacao.save()
+                chamado.status = "Concluído"
+                chamado.save()
+                messages.success(request, "Chamado finalizado e avaliação enviada com sucesso!")
+            else:
+                chamado.status = "Concluído"
+                chamado.save()
+                messages.success(request, "Chamado finalizado com sucesso!")
+
+        elif confirmacao == 'nao':  # Se o usuário NÃO confirmou a finalização
             chamado.status = "Em andamento"
             chamado.save()
             messages.warning(request, "O problema não foi resolvido. O chamado permanece em andamento.")
-            return redirect('chamado_by_id', chamado_id=chamado.id)
+
+        return redirect('chamado_by_id', chamado_id=chamado.id)
+
+    return render(request, 'detalhe_chamado.html', {'chamado': chamado})
+
 
     return render(request, 'detalhe_chamado.html', {'chamado': chamado})
 
 def custom_handler404(request, exception=None):
     return render(request, 'error-404.html')
+
+# def send_message_to_all_users(message):
+#     channel_layer = get_channel_layer()
+#     async_to_sync(channel_layer.group_send)(
+#         'all_users',
+#         {
+#             'type': 'chat_message',
+#             'message': message
+#         }
+#     )
+    
+# def enviar_mensagem_ti(request):
+#     if request.user.profile.equipe_ti:
+#         mensagem = "Informamos que, devido a falha de internet no estado estamos sem internet, agradecemos a compreensão"
+#         send_message_to_all_users(mensagem)
+#         return JsonResponse({'status': 'Mensagem enviada!'})
 

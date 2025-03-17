@@ -15,16 +15,16 @@
     </div>
     {% endif %}
   <div class="col-12">
-    <div class="card">
-      <div class="card-body">
+    <div class="card ">
+      <div class="card-body ">
         <div class="d-md-flex">
           <div>
             <h4 class="card-title">Detalhes do Chamado #{{ chamado.id }}</h4>
             <h5 class="card-subtitle">Informações do chamado</h5>
           </div>
         </div>
-        <div class="table-responsive">
-          <table class="table mb-0 table-hover align-middle text-nowrap">
+        <div class="table-responsive ">
+          <table class="table mb-0 table-hover align-middle text-nowrap ">
             <tbody>
               <tr>
                 <td>Título</td>
@@ -51,17 +51,23 @@
                 <td>Setor</td>
                 <td>{{ chamado.setor }}</td>
               </tr>
-              <tr>
-                <td>Descrição</td>
-                <td>{{ chamado.descricao }}</td>
-              </tr>
-              <tr>
-                <td>Marca/Modelo</td>
-                {% if chamado.tipo_equipamento is None %}
-                  <td>N/A</td>
-                {% else %}
+              {% if chamado.quantidade_resma %}
+                <tr>
+                  <td>Quantidade de Resmas</td>
+                  <td>{{ chamado.quantidade_resma }}</td>
+                </tr>
+              {% elif chamado.descricao %}
+                <tr>
+                  <td>Descrição</td>
+                  <td>{{ chamado.descricao }}</td>
+                </tr>
+              {% endif %}
+              {% if chamado.tipo_equipamento %}
+                <tr>
+                  <td>Marca/Modelo</td>
                   <td>{{ chamado.tipo_equipamento }}</td>
-                {% endif %}
+                </tr>
+              {% endif %}
               </tr>
               <tr>
                 <td>Criado em</td>
@@ -132,13 +138,60 @@
         {% if user == chamado.user and chamado.status == 'Pendente' %}
         <div id="confirmacao-finalizacao" class="mt-4">
           <p>O problema foi resolvido?</p>
-          <form action="{% url 'confirmar_finalizacao' chamado.id %}" method="POST">
-            {% csrf_token %}
-            <button class="btn btn-success" type="submit" name="confirmar">Sim, o problema foi resolvido</button>
-            <button class="btn btn-danger" type="submit" name="nao_confirmar">Não, o problema não foi resolvido</button>
+          <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#avaliacaoModal">
+              Sim, Finalizar chamado
+          </button>
+          <form action="{% url 'confirmar_finalizacao' chamado.id %}" method="POST" style="display: inline;">
+              {% csrf_token %}
+              <input type="hidden" name="confirmacao" value="nao">
+              <button class="btn btn-danger" type="submit">Não, o problema não foi resolvido</button>
           </form>
+      </div>
+      
+      <!-- Modal de Avaliação -->
+      <div class="modal fade" id="avaliacaoModal" tabindex="-1" aria-labelledby="avaliacaoModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title mb-1" id="avaliacaoModalLabel">Avaliação do Chamado</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p class="modal-body mb-1">A resolução do chamado atendeu às suas expectativas?</p>
+                      <form id="formAvaliacao" action="{% url 'confirmar_finalizacao' chamado.id %}" method="POST">
+                          {% csrf_token %}
+                          <div class="star-rating text-center d-flex justify-content-center align-items-center">
+                              <input type="radio" id="star5" name="avaliacao" value="5"><label for="star5">&#9733;</label>
+                              <input type="radio" id="star4" name="avaliacao" value="4"><label for="star4">&#9733;</label>
+                              <input type="radio" id="star3" name="avaliacao" value="3"><label for="star3">&#9733;</label>
+                              <input type="radio" id="star2" name="avaliacao" value="2"><label for="star2">&#9733;</label>
+                              <input type="radio" id="star1" name="avaliacao" value="1"><label for="star1">&#9733;</label>
+                          </div>
+                          <textarea name="comentario" class="form-control mt-3" placeholder="Deixe um comentário (opcional)"></textarea>
+                          <div class="modal-footer">
+                              <input type="hidden" name="confirmacao" value="sim">
+                              <button type="submit" class="btn btn-success" form="formAvaliacao">Finalizar Chamado</button>
+                          </div>
+                      </form>
+                  </div>
+              </div>
+          </div>
         </div>
+
+        <script>
+            function mostrarAvaliacao(valor) {
+                document.getElementById("confirmacao").value = valor;
+
+                if (valor === "sim") {
+                    document.getElementById("avaliacao-container").style.display = "block";
+                } else {
+                    document.getElementById("formFinalizacao").submit();
+                }
+            }
+        </script>
         {% endif %}
+
+
 
 <!-- ============================================================== -->
 <!-- Comentarios -->

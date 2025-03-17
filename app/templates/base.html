@@ -108,6 +108,12 @@
                 <i class="mdi mdi-account-network"></i><span class="hide-menu">Abrir Chamado</span>
               </a>
             </li>
+            {% comment %} <li class="sidebar-item mt-auto">
+              {% if request.user.profile.equipe_ti %}
+                <button id="btn_send_message" class="btn btn-info">Enviar Alerta S/ Internet</button>
+              {% endif %}
+            </li> {% endcomment %}
+            
             {% comment %} <li class="sidebar-item">
               <a class="sidebar-link waves-effect waves-dark sidebar-link" aria-expanded="false">
                 <i class="mdi mdi-border-all"></i><span class="hide-menu">Table</span>
@@ -137,7 +143,8 @@
   {% block extra_js %}{% endblock %}
 
   <script>
-    const socket = new WebSocket('ws://' + window.location.host + '/ws/chamados/');
+    // WebSocket para notificações
+    const notificationSocket = new WebSocket('ws://' + window.location.host + '/ws/chamados/');
   
     // Função para restaurar notificações armazenadas
     function restoreNotifications() {
@@ -177,7 +184,7 @@
     // Função para remover uma notificação
     function removeNotification(index) {
       const storedNotifications = JSON.parse(sessionStorage.getItem('notifications')) || [];
-      
+  
       // Remove a notificação pelo índice
       storedNotifications.splice(index, 1);
       sessionStorage.setItem('notifications', JSON.stringify(storedNotifications));
@@ -200,10 +207,11 @@
     // Restaura notificações quando a página é carregada
     window.onload = restoreNotifications;
   
-    socket.onmessage = function (event) {
+    // Escuta as mensagens do WebSocket para notificações
+    notificationSocket.onmessage = function (event) {
       const data = JSON.parse(event.data);
       const message = data.message;
-
+  
       if (message.includes('Status alterado')) { // Ajuste conforme o tipo de mensagem que seu sistema envia
         // Recarrega a página para atualizar o status dos chamados
         location.reload();
@@ -218,11 +226,48 @@
       location.reload();
     };
   
-    socket.onclose = function (event) {
+    notificationSocket.onclose = function (event) {
       console.error('WebSocket fechado inesperadamente.');
     };
-  </script>  
+  </script>
   
+  {% comment %} <script>
+    // WebSocket para envio de mensagens
+    const alertSocket = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
+  
+    const btnSendMessage = document.getElementById('btn_send_message');
+  
+    if (btnSendMessage) {
+      btnSendMessage.addEventListener('click', () => {
+        const message = 'Informamos que, devido a falha de internet no estado estamos sem internet, agradecemos a compreensão.';
+        alertSocket.send(JSON.stringify({ message: message }));
+      });
+    }
+  
+    // Escuta as mensagens do WebSocket para alertas
+    alertSocket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      if (data.message) {
+        // Exibe a mensagem em um modal
+        const modal = new bootstrap.Modal(document.getElementById('modalMessage')); // Cria o modal com a instância do Bootstrap
+        modal.show();  // Exibe o modal com o efeito fade
+        modal._element.querySelector('.modal-body').innerText = data.message; // Adiciona a mensagem ao corpo do modal
+      }
+    };
+  
+    function closeModal() {
+        const modal = new bootstrap.Modal(document.getElementById('modalMessage'));
+        modal.hide();  // Fecha o modal
+      // Marque como visualizada para o usuário, salvando no sessionStorage
+      sessionStorage.setItem('message_viewed', 'true');
+    }
+  
+    window.onload = function() {
+      if (sessionStorage.getItem('message_viewed') === 'true') {
+        document.getElementById('modalMessage').style.display = 'none';
+      }
+    };
+  </script>   {% endcomment %}
   
 </body>
 

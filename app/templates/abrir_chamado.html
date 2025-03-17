@@ -29,11 +29,12 @@
 
                         <!-- Escolha do Tipo de Chamado -->
                         <div class="form-group">
-                            <label for="tipo_chamado" class="col-md-12">Tipo de Chamado</label>
                             <div class="col-md-12">
-                                <select id="tipo_chamado" name="tipo_chamado" class="form-select form-control-line" onchange="mostrarCampos()">
-                                    <option value="normal">Chamado</option>
-                                    <option value="sei">Cadastro no SEI</option>
+                                <select id="tipo_chamado" name="tipo_chamado" class="form-select form-control-line font-medium text-dark" onchange="mostrarCampos()">
+                                    <option value="" disabled selected class="text-secondary">Selecionar tipo de Chamado</option>
+                                    <option value="normal">Chamado Padrão</option>
+                                    <option value="papel">Solicitar Resma de Papel</option>
+                                    <option value="tonner">Solicitar Tonner impressora</option>
                                 </select>
                             </div>
                         </div>
@@ -66,30 +67,37 @@
                             </div>
                         </div>
 
-                        <!-- Campos para Cadastro no SEI -->
-                        <div id="campos_sei" style="display: none;">
+                        <!-- Campos para Solicitar Resma de Papel -->
+                        <div id="campos_papel" style="display: none;">
                             <div class="form-group">
-                                <label for="nome_usuario" class="col-md-12">Nome do Usuário</label>
+                                <label for="quantidade_resma" class="col-md-12">Quantidade de Resma</label>
                                 <div class="col-md-12">
-                                    <input type="text" id="nome_usuario" name="nome_usuario" class="form-control form-control-line" placeholder="Nome completo">
+                                    <input type="number" id="quantidade_resma" name="quantidade_resma" class="form-control form-control-line" placeholder="Digite a quantidade de resma" >
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="cpf" class="col-md-12">CPF</label>
+                                <label for="setor_papel" class="col-md-12">Setor</label>
                                 <div class="col-md-12">
-                                    <input type="text" id="cpf" name="cpf" class="form-control form-control-line" placeholder="Digite o CPF">
+                                    <input type="text" id="setor_papel" name="setor_papel" class="form-control form-control-line" placeholder="Digite o setor" >
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campos para Solicitar Tonner -->
+                        <div id="campos_tonner" style="display: none;">
+                            <div class="form-group">
+                                <label for="tipo_impressora" class="col-md-12">Tipo de Impressora</label>
+                                <div class="col-md-12">
+                                    <select id="tipo_impressora" name="tipo_impressora" class="form-select form-control-line">
+                                        <option value="Com Scanner (M3145idn)">Com Scanner (M3145idn)</option>
+                                        <option value="Sem Scanner (P3045dn)">Sem Scanner (P3045dn)</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="email" class="col-md-12">E-mail</label>
+                                <label for="setor_tonner" class="col-md-12">Setor</label>
                                 <div class="col-md-12">
-                                    <input type="email" id="email" name="email" class="form-control form-control-line" placeholder="Digite o e-mail">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="setor_solicitante" class="col-md-12">Setor Solicitante</label>
-                                <div class="col-md-12">
-                                    <input type="text" id="setor_solicitante" name="setor_solicitante" class="form-control form-control-line" placeholder="Digite o setor solicitante">
+                                    <input type="text" id="setor_tonner" name="setor_tonner" class="form-control form-control-line" placeholder="Digite o setor">
                                 </div>
                             </div>
                         </div>
@@ -108,11 +116,52 @@
 </div>
 
 <script>
-function mostrarCampos() {
-    var tipo = document.getElementById("tipo_chamado").value;
-    document.getElementById("campos_normais").style.display = (tipo === "normal") ? "block" : "none";
-    document.getElementById("campos_sei").style.display = (tipo === "sei") ? "block" : "none";
-}
+    function mostrarCampos() {
+        var tipo = document.getElementById("tipo_chamado").value;
+
+        // Exibe os campos conforme o tipo de chamado
+        document.getElementById("campos_normais").style.display = (tipo === "normal") ? "block" : "none";
+        document.getElementById("campos_papel").style.display = (tipo === "papel") ? "block" : "none";
+        document.getElementById("campos_tonner").style.display = (tipo === "tonner") ? "block" : "none";
+
+        // Limpa os campos obrigatórios
+        resetarCampos();
+
+        // Adiciona os campos obrigatórios de acordo com o tipo de chamado
+        if (tipo === "normal") {
+            ativarCampos(["titulo", "setor", "descricao"]);
+        } else if (tipo === "papel") {
+            ativarCampos(["quantidade_resma", "setor_papel"]);
+        } else if (tipo === "tonner") {
+            ativarCampos(["tipo_impressora", "setor_tonner"]);
+        }
+    }
+
+    // Função para adicionar o atributo "required" aos campos
+    function ativarCampos(campos) {
+        campos.forEach(function(campoId) {
+            var campo = document.getElementById(campoId);
+            if (campo) {
+                campo.setAttribute("required", "required");
+            }
+        });
+    }
+
+    // Função para remover o atributo "required" de todos os campos
+    function resetarCampos() {
+        var campos = [
+            "titulo", "setor", "descricao", 
+            "quantidade_resma", "setor_papel", 
+            "tipo_impressora", "setor_tonner"
+        ];
+        campos.forEach(function(campoId) {
+            var campo = document.getElementById(campoId);
+            if (campo) {
+                campo.removeAttribute("required");
+            }
+        });
+    }
 </script>
+
 
 {% endblock %}

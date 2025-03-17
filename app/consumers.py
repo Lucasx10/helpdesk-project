@@ -25,3 +25,43 @@ class ChamadoConsumer(AsyncWebsocketConsumer):
         # Envia mensagem para o WebSocket
         message = event['message']
         await self.send(text_data=json.dumps({'message': message}))
+
+# class NotificationConsumer(AsyncWebsocketConsumer):
+#     async def connect(self):
+#         self.room_name = 'all_users'
+#         self.room_group_name = f'chat_{self.room_name}'
+
+#         # Adiciona o usuário à group
+#         await self.channel_layer.group_add(
+#             self.room_group_name,
+#             self.channel_name
+#         )
+#         await self.accept()
+
+#     async def disconnect(self, close_code):
+#         # Remove o usuário da group
+#         await self.channel_layer.group_discard(
+#             self.room_group_name,
+#             self.channel_name
+#         )
+
+#     # Recebe a mensagem do WebSocket
+#     async def receive(self, text_data):
+#         data = json.loads(text_data)
+#         message = data['message']
+#         # Envia a mensagem para o grupo
+#         await self.channel_layer.group_send(
+#             self.room_group_name,
+#             {
+#                 'type': 'chat_message',
+#                 'message': message
+#             }
+#         )
+
+#     # Envia a mensagem para WebSocket
+#     async def chat_message(self, event):
+#         message = event['message']
+#         # Envia a mensagem para o WebSocket
+#         await self.send(text_data=json.dumps({
+#             'message': message
+#         }))

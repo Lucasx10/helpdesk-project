@@ -12,6 +12,7 @@ application = ProtocolTypeRouter({
     "websocket": AuthMiddlewareStack(
         URLRouter([
             path('ws/chamados/', ChamadoConsumer.as_asgi()),
+            # path('ws/notifications/', NotificationConsumer.as_asgi()),
         ])
     ),
 })
