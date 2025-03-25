@@ -8,12 +8,60 @@ from django.contrib.messages import constants
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
 from django.shortcuts import render
-from django.db.models import Count
-from django.db.models.functions import ExtractMonth
+from django.db.models.functions import ExtractMonth, TruncMonth
+from django.db.models import Count, Sum
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.shortcuts import render
+from .models import Chamados, Avaliacao
+import json
+import calendar
+
+@login_required(login_url='loginpage')
+def dashboard(request):
+    if request.user.profile.equipe_ti:
+        ano_atual = datetime.now().year
+        chamados = Chamados.objects.all
+        chamados_concluidos = Chamados.objects.filter(status="Concluído")
+        chamados_com_5_estrelas = Avaliacao.objects.filter(nota=5).count()
+
+        # Chamados por Setor (para o gráfico de pizza)
+        setores_chamados = Chamados.objects.values('setor').annotate(total=Count('id')).order_by('-total')[:5]
+        
+        # Chamados por mês (para o gráfico de onda)
+        chamados_por_mes = Chamados.objects.filter(created_at__year=ano_atual).annotate(month=TruncMonth('created_at')).values('month').annotate(total=Count('id')).order_by('month')
+        
+        # Gerar todos os meses do ano
+        meses_ano = [calendar.month_abbr[i+1] for i in range(12)]
+        
+        # Inicializar o dicionário para todos os meses com valor 0
+        chamados_por_mes_dict = {mes: 0 for mes in meses_ano}
+        
+        # Atualizar o dicionário com os dados dos chamados por mês
+        for chamado in chamados_por_mes:
+            mes_nome = chamado['month'].strftime('%b')  # Ex: 'Jan', 'Feb', etc.
+            chamados_por_mes_dict[mes_nome] = chamado['total']
+        
+        # Convertendo os dados para passar ao template
+        chamados_por_mes = [{'mes': mes, 'total': total} for mes, total in chamados_por_mes_dict.items()]
+        
+
+        # Quantidade de resmas de papel
+        quantidade_resmas = Chamados.objects.aggregate(Sum('quantidade_resma'))['quantidade_resma__sum'] or 0
+
+        context = {
+            "chamados": chamados,
+            "chamados_concluidos": chamados_concluidos,
+            "chamados_com_5_estrelas": chamados_com_5_estrelas,
+            "chamados_solicito_resma_papel": quantidade_resmas,
+            'setores_chamados': json.dumps(list(setores_chamados)),
+            'chamados_por_mes': chamados_por_mes  # Dados para o gráfico de onda
+        }
+        return render(request, 'dashboard.html', context)
+    else:
+        return redirect('index')
 
 def loginpage(request):
     if request.user.is_authenticated:  # Verifica se o usuário já está autenticado

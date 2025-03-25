@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-md-flex">
+                  <div>
+                    <h4 class="card-title">Dashboard</h4>
+                    <h5 class="card-subtitle mb-4">
+                      Estatísticas dos dados dos chamados.
+                    </h5>
+                  </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="card card-body mb-4">
+                            <article class="icontext d-flex align-items-center">
+                                <i class="text-green mdi mdi-comment-account" style="font-size: 40px; margin-right: 15px; color: rgba(54, 130, 235, 1)"></i>
+                                <div class="text">
+                                    <h2 class="mb-2 card-title fs-4">Total Chamados</h2>
+                                    <span class="fw-bold fs-2">{{ chamados.count }}</span>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3">
+                        <div class="card card-body mb-4">
+                            <article class="icontext d-flex align-items-center">
+                                <i class="text-green mdi mdi-check-circle" style="font-size: 40px; margin-right: 15px; color: green"></i>
+                                <div class="text">
+                                    <h2 class="mb-2 card-title fs-4">Chamados Concluídos</h2>
+                                    <span class="fw-bold fs-2">{{ chamados_concluidos.count }}</span>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3">
+                        <div class="card card-body mb-4">
+                            <article class="icontext d-flex align-items-center">
+                                <i class="mdi mdi-star" style="font-size: 40px; margin-right: 15px; color: gold;"></i>
+                                <div class="text">
+                                    <h2 class="mb-2 card-title fs-4">Chamados 5 Estrelas</h2>
+                                    <span class="fw-bold fs-2">{{ chamados_com_5_estrelas }}</span>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3">
+                        <div class="card card-body mb-4">
+                            <article class="icontext d-flex align-items-center">
+                                <i class="text-blue mdi mdi-printer" style="font-size: 40px; margin-right: 15px; color: darkorange;"></i>
+                                <div class="text">
+                                    <h6 class="mb-2 card-title fs-4">Resmas de Papel</h6>
+                                    <span class="fw-bold fs-2">{{ chamados_solicito_resma_papel }}</span>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                    
+                    <!-- Gráfico de Pizza -->
+                    <div class="col-lg-4">
+                        <div class="card card-body mb-4">
+                            <h6 class="card-title">Chamados por Setor</h6>
+                            <canvas id="chamadosSetoresChart" style="height: 200px;"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Gráfico de Onda (Chamados por Mês) -->
+                    <div class="col-lg-8">
+                        <div class="card card-body mb-4">
+                            <h6 class="card-title">Chamados por Mês</h6>
+                            <canvas id="chamadosMesesChart" style="height: 430px; "></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        // Gráfico de Pizza - Chamados por Setor
+        var ctxSetores = document.getElementById('chamadosSetoresChart').getContext('2d');
+        var setores = {{ setores_chamados|safe }};
+        
+        var labelsSetores = setores.map(item => item.setor);
+        var dataSetores = setores.map(item => item.total);
+
+        new Chart(ctxSetores, {
+            type: 'pie',
+            data: {
+                labels: labelsSetores,
+                datasets: [{
+                    data: dataSetores,
+                    backgroundColor: ['rgba(255, 99, 132, 0.8)', 'rgba(50, 156, 49, 0.8)', 'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)', 'rgba(54, 162, 235, 0.8)'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,  // Ponto de estilo para as legendas
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,  // Começar o gráfico do eixo Y em 0
+                        ticks: {
+                            padding: 10 // Espaçamento dos rótulos do eixo Y
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            padding: 10 // Espaçamento dos rótulos do eixo X
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Onda - Chamados por Mês
+        var ctxMeses = document.getElementById('chamadosMesesChart').getContext('2d');
+        var chamadosPorMes = {{ chamados_por_mes|safe }};
+
+        var labelsMeses = chamadosPorMes.map(item => item.mes);  // Extrair apenas os meses
+        var dataMeses = chamadosPorMes.map(item => item.total);  // Extrair os totais
+
+        new Chart(ctxMeses, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],  // Meses como labels
+                datasets: [{
+                    label: 'Chamados por Mês',
+                    tension: 0.3,
+                    data: dataMeses,
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    fill: true,
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,  // Ponto de estilo para as legendas
+                            padding: 20  // Esse é o espaçamento entre a label e o gráfico
+                        },
+                    }
+                },
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }  // Iniciar o gráfico do eixo Y em 0
+                }
+            }
+        });
+
+    </script>
+{% endblock %}
