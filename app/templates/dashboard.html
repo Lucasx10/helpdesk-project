@@ -82,6 +82,45 @@
             </div>
         </div>
       </div>
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <!-- title -->
+            <div class="d-md-flex">
+              <div>
+                <h4 class="card-title">Equipe TI e Chamados Atendidos</h4>
+                <h5 class="card-subtitle mb-4">
+                  Visualize os usuários de TI e o total de chamados atendidos
+                </h5>
+              </div>
+            </div>
+            <!-- title -->
+            <div class="table-responsive">
+              <table class="table mb-0 table-hover align-middle text-nowrap">
+                <thead>
+                  <tr>
+                    <th class="border-top-0"><h5>#</h5></th>
+                    <th class="border-top-0"><h5>Usuário</h5></th>
+                    <th class="border-top-0"><h5>Chamados Atendidos</h5></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for usuario in usuarios_equipe_ti %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ usuario.username }}</td>
+                    <td>{{ usuario.total_chamados }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="3" class="text-center">Nenhum usuário encontrado.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
     </div>
 
     <script>

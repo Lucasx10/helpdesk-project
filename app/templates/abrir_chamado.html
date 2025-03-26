@@ -27,42 +27,95 @@
                     <form action="{% url 'abrir_chamado' %}" method="post" class="form-horizontal form-material mx-2">
                         {% csrf_token %}
 
+                        <!-- Escolha da Categoria -->
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <label for="categoria_chamado">Tipo de Chamado</label>
+                                <select id="categoria_chamado" name="categoria_chamado" class="form-select form-control-line font-medium text-dark" onchange="atualizarTitulos()">
+                                    <option value="" disabled selected class="text-secondary">Selecionar Tipo de chamado</option>
+                                    <option value="internet">Sem acesso à Internet</option>
+                                    <option value="equipamento">Problema em Equipamento</option>
+                                    <option value="sistema">Problema em Sistema</option>
+                                    <option value="solicitacao">Solicitação</option>
+                                    <option value="outro">Outro</option>
+                                </select>                                
+                            </div>
+                        </div>
+
                         <!-- Escolha do Tipo de Chamado -->
                         <div class="form-group">
                             <div class="col-md-12">
+                                <label for="categoria_chamado">Titulo do Chamado</label>
                                 <select id="tipo_chamado" name="tipo_chamado" class="form-select form-control-line font-medium text-dark" onchange="mostrarCampos()">
-                                    <option value="" disabled selected class="text-secondary">Selecionar tipo de Chamado</option>
-                                    <option value="normal">Chamado Padrão</option>
-                                    <option value="papel">Solicitar Resma de Papel</option>
-                                    <option value="tonner">Solicitar Tonner impressora</option>
+                                    <option value="" disabled selected class="text-secondary">Selecionar Chamado</option>
                                 </select>
                             </div>
                         </div>
 
+                        
                         <!-- Campos para Chamado Normal -->
-                        <div id="campos_normais">
-                            <div class="form-group">
-                                <label for="titulo" class="col-md-12">Título do Chamado</label>
-                                <div class="col-md-12">
-                                    <input type="text" id="titulo" name="titulo" class="form-control form-control-line" placeholder="Digite o título do chamado" required>
-                                </div>
-                            </div>
+                        <div id="campos_normal" style="display: none;">
                             <div class="form-group">
                                 <label for="setor" class="col-md-12">Setor</label>
                                 <div class="col-md-12">
-                                    <input type="text" id="setor" name="setor" class="form-control form-control-line" placeholder="Digite o setor" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="tipo_equipamento" class="col-md-12">Marca/Modelo Equipamento (Opcional)</label>
-                                <div class="col-md-12">
-                                    <input type="text" id="tipo_equipamento" name="tipo_equipamento" class="form-control form-control-line" placeholder="Digite a Marca ou modelo do equipamento">
+                                    <input type="text" id="setor" name="setor" class="form-control form-control-line" placeholder="Digite o setor" >
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label for="descricao" class="col-md-12">Descrição</label>
                                 <div class="col-md-12">
-                                    <textarea id="descricao" name="descricao" rows="5" class="form-control form-control-line" placeholder="Digite a descrição do problema" required></textarea>
+                                    <textarea id="descricao" name="descricao" rows="5" class="form-control form-control-line" placeholder="Digite a descrição do problema" ></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campos para Chamado Equipamento -->
+                        <div id="campos_equipamento" style="display: none;">
+                            <div class="form-group">
+                                <label for="setor" class="col-md-12">Setor</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="setor" name="setor_equipamento" class="form-control form-control-line" placeholder="Digite o setor" >
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="tipo_equipamento" class="col-md-12">Marca/Modelo Equipamento (Opcional)</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="tipo_equipamento" name="tipo_equipamento_outro" class="form-control form-control-line" placeholder="Digite a Marca ou modelo do equipamento">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="descricao" class="col-md-12">Descrição</label>
+                                <div class="col-md-12">
+                                    <textarea id="descricao" name="descricao_equipamento" rows="5" class="form-control form-control-line" placeholder="Digite a descrição do problema" ></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Campos para Chamado Outro -->
+                        <div id="campos_outro" style="display: none;">
+                            <div class="form-group">
+                                <label for="titulo" class="col-md-12">Título do Chamado</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="titulo" name="titulo" class="form-control form-control-line" placeholder="Digite o título do chamado" >
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="setor" class="col-md-12">Setor</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="setor" name="setor_outro" class="form-control form-control-line" placeholder="Digite o setor" >
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="tipo_equipamento" class="col-md-12">Marca/Modelo Equipamento (Opcional)</label>
+                                <div class="col-md-12">
+                                    <input type="text" id="tipo_equipamento" name="tipo_equipamento_outro" class="form-control form-control-line" placeholder="Digite a Marca ou modelo do equipamento">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="descricao" class="col-md-12">Descrição</label>
+                                <div class="col-md-12">
+                                    <textarea id="descricao" name="descricao_outro" rows="5" class="form-control form-control-line" placeholder="Digite a descrição do problema" ></textarea>
                                 </div>
                             </div>
                         </div>
@@ -116,30 +169,111 @@
 </div>
 
 <script>
+    // Lista de títulos de chamados por categoria
+    const titulosPorCategoria = {
+        "equipamento": [
+            { value: "Problema no Computador", text: "Problema no Computador" },
+            { value: "Problema na Impressora", text: "Problema na Impressora" },
+            { value: "Problema no Scanner", text: "Problema no Scanner" }
+        ],
+        "sistema": [
+            { value: "Problema com Projudi", text: "Problema com Projudi" },
+            { value: "Problema de acesso ao Server", text: "Problema de acesso ao Server" },
+            { value: "Problema de acesso ao Scan", text: "Problema de acesso ao Scan" },
+            { value: "Problema ao acessar site", text: "Problema ao acessar site" },
+        ],
+        "solicitacao": [
+            { value: "Solicitação de Acesso a Sistemas", text: "Solicitação de Acesso a Sistemas" },
+            { value: "Solicitação de Equipamento", text: "Solicitação de Equipamento" },
+            { value: "Solicitar Resma de Papel", text: "Solicitar Resma de Papel" },
+            { value: "Solicitar Tonner Impressora", text: "Solicitar Tonner Impressora" }
+        ]
+    };
+
+    function atualizarTitulos() {
+        let categoria = document.getElementById("categoria_chamado").value;
+        let tipoChamado = document.getElementById("tipo_chamado");
+
+        // Limpa as opções anteriores
+        tipoChamado.innerHTML = '<option value="" disabled selected class="text-secondary">Selecionar Chamado</option>';
+        tipoChamado.value = ""; // Garante que não fique com um valor anterior
+
+        resetarCampos(); // Esconde todos os campos ao trocar a categoria
+
+        // Se a categoria for "internet", definir automaticamente os campos
+        if (categoria === "internet") {
+            document.getElementById("tipo_chamado").innerHTML = '<option value="Sem acesso à Internet" selected>Sem acesso à Internet</option>';
+
+            // Exibir os campos corretos
+            document.getElementById("campos_normal").style.display = "block";
+
+            // Ativar os campos como obrigatórios
+            ativarCampos(["setor", "descricao"]);
+        
+        } else {
+            // Se a categoria estiver definida, adiciona as opções correspondentes
+            if (titulosPorCategoria[categoria]) {
+                titulosPorCategoria[categoria].forEach(item => {
+                    let option = document.createElement("option");
+                    option.value = item.value;
+                    option.textContent = item.text;
+                    tipoChamado.appendChild(option);
+                });
+            }
+
+             // Adiciona a opção "Outro" à lista
+            if (categoria !== "internet") {
+                let optionOutro = document.createElement("option");
+                optionOutro.value = "outro";
+                optionOutro.textContent = "Outro (Digite o título)";
+                tipoChamado.appendChild(optionOutro);
+            }
+
+
+            // Esconder os campos e limpar valores
+            document.getElementById("campos_normal").style.display = "none";
+            document.getElementById("setor").value = "";
+            document.getElementById("descricao").value = "";
+        }
+    }
+
     function mostrarCampos() {
         var tipo = document.getElementById("tipo_chamado").value;
 
-        // Exibe os campos conforme o tipo de chamado
-        document.getElementById("campos_normais").style.display = (tipo === "normal") ? "block" : "none";
-        document.getElementById("campos_papel").style.display = (tipo === "papel") ? "block" : "none";
-        document.getElementById("campos_tonner").style.display = (tipo === "tonner") ? "block" : "none";
+        // Esconde todos os campos antes de exibir o correto
+        document.getElementById("campos_outro").style.display = "none";
+        document.getElementById("campos_normal").style.display = "none";
+        document.getElementById("campos_papel").style.display = "none";
+        document.getElementById("campos_tonner").style.display = "none";
+        document.getElementById("campos_equipamento").style.display = "none";
 
         // Limpa os campos obrigatórios
         resetarCampos();
 
-        // Adiciona os campos obrigatórios de acordo com o tipo de chamado
-        if (tipo === "normal") {
-            ativarCampos(["titulo", "setor", "descricao"]);
-        } else if (tipo === "papel") {
+        // Exibe os campos de acordo com o tipo de chamado selecionado
+        if (tipo === "Problema no Computador" || tipo === "Problema no Scanner" || tipo === "Problema na Impressora" || tipo === "Solicitação de Equipamento") {
+            document.getElementById("campos_equipamento").style.display = "block";
+            ativarCampos(["setor_equipamento", "descricao_equipamento"]);
+        } else if (tipo === "Problema com Projudi" || tipo === "Problema de acesso ao Server" || tipo === "Problema de acesso ao Scan" || tipo === "Problema ao acessar site" || tipo === "Solicitação de Acesso a Sistemas") {
+            document.getElementById("campos_normal").style.display = "block";
+            ativarCampos(["setor", "descricao"]);
+        } else if (tipo === "Solicitar Resma de Papel") {
+            document.getElementById("campos_papel").style.display = "block";
             ativarCampos(["quantidade_resma", "setor_papel"]);
-        } else if (tipo === "tonner") {
+        } else if (tipo === "Solicitar Tonner Impressora" ) {
+            document.getElementById("campos_tonner").style.display = "block";
             ativarCampos(["tipo_impressora", "setor_tonner"]);
+        } else {
+            // Quando "Outro" é selecionado, esconde o campo de seleção e mostra o campo de texto
+            document.getElementById("campos_outro").style.display = "block";
+            document.getElementById("titulo_outro").style.display = "block"; // Exibe o campo de texto
+            document.getElementById("tipo_chamado").style.display = "none"; // Esconde o select
+            ativarCampos(["titulo_outro", "setor", "descricao"]);
         }
     }
 
-    // Função para adicionar o atributo "required" aos campos
     function ativarCampos(campos) {
-        campos.forEach(function(campoId) {
+        campos.forEach(function (campoId) {
             var campo = document.getElementById(campoId);
             if (campo) {
                 campo.setAttribute("required", "required");
@@ -147,21 +281,21 @@
         });
     }
 
-    // Função para remover o atributo "required" de todos os campos
     function resetarCampos() {
-        var campos = [
-            "titulo", "setor", "descricao", 
-            "quantidade_resma", "setor_papel", 
-            "tipo_impressora", "setor_tonner"
-        ];
-        campos.forEach(function(campoId) {
-            var campo = document.getElementById(campoId);
+        let grupos = ["campos_normal", "campos_equipamento", "campos_outro", "campos_papel", "campos_tonner"];
+        grupos.forEach(id => document.getElementById(id).style.display = "none");
+        
+        let campos = ["titulo", "setor", "descricao", "quantidade_resma", "setor_papel", "tipo_impressora", "setor_tonner"];
+        campos.forEach(function (campoId) {
+            let campo = document.getElementById(campoId);
             if (campo) {
+                campo.value = "";
                 campo.removeAttribute("required");
             }
         });
     }
 </script>
+
 
 
 {% endblock %}
