@@ -51,8 +51,41 @@ def dashboard(request):
         # Quantidade de resmas de papel
         quantidade_resmas = Chamados.objects.aggregate(Sum('quantidade_resma'))['quantidade_resma__sum'] or 0
         
-         # Dados dos usuários com equipe_ti e total de chamados atendidos
-        usuarios_equipe_ti = User.objects.filter(profile__equipe_ti=True).annotate(total_chamados=Count('chamados_atendidos')).order_by('-total_chamados')
+       # Chamados atendidos por cada usuário TI
+        usuarios_ti = (
+            User.objects.filter(profile__equipe_ti=True)
+            .annotate(total_chamados=Count('chamados_atendidos'))
+            .values("id", "username", "total_chamados")
+        )
+
+        # Chamados mais atendidos por cada usuário
+        chamados_por_usuario = (
+            Chamados.objects.filter(status="Concluído")
+            .values("responsavel_ti__id", "responsavel_ti__username", "titulo")
+            .annotate(total=Count("id"))
+            .order_by("responsavel_ti__id", "-total")
+        )
+
+        # Criar dicionário com o total de chamados atendidos por cada usuário TI
+        usuarios_chamados = {user["id"]: {
+            "username": user["username"],
+            "total_chamados": user["total_chamados"],
+            "titulo_mais_atendido": None,
+            "total_titulo": 0
+        } for user in usuarios_ti}
+
+        # Preencher com os títulos mais atendidos
+        for chamado in chamados_por_usuario:
+            user_id = chamado["responsavel_ti__id"]
+            if user_id in usuarios_chamados:
+                if usuarios_chamados[user_id]["titulo_mais_atendido"] is None:
+                    usuarios_chamados[user_id]["titulo_mais_atendido"] = chamado["titulo"]
+                    usuarios_chamados[user_id]["total_titulo"] = chamado["total"]
+
+        # Converter para lista para uso no template
+        lista_usuarios_chamados = list(usuarios_chamados.values())
+        print(lista_usuarios_chamados)
+
 
         context = {
             "chamados": chamados,
@@ -61,7 +94,7 @@ def dashboard(request):
             "chamados_solicito_resma_papel": quantidade_resmas,
             'setores_chamados': json.dumps(list(setores_chamados)),
             'chamados_por_mes': chamados_por_mes,  # Dados para o gráfico de onda
-            'usuarios_equipe_ti': usuarios_equipe_ti,
+            "usuarios_chamados": lista_usuarios_chamados,
         }
         return render(request, 'dashboard.html', context)
     else:
@@ -267,7 +300,7 @@ def abrir_chamado(request):
             chamado.save()
             
         elif tipo_chamado == 'outro':
-            titulo = request.POST.get('tipo_chamado')
+            titulo = request.POST.get('titulo')
             descricao = request.POST.get('descricao_outro')
             setor = request.POST.get('setor_outro')
             tipo_equipamento = request.POST.get('tipo_equipamento_outro', '')  # Campo opcional
@@ -285,37 +318,36 @@ def abrir_chamado(request):
         elif tipo_chamado == 'solicitacao':
             # Para solicitar resma de papel
             titulo = request.POST.get('tipo_chamado')
-            if titulo == 'Solicito Resma de Papel':
+            if titulo == 'Solicitar Resma de Papel':
                 quantidade_resma = request.POST.get('quantidade_resma')
                 setor_papel = request.POST.get('setor_papel')
 
                 chamado = Chamados.objects.create(
                     user=request.user,
-                    titulo="Solicito Resma de Papel",
+                    titulo='Solicito Resma de Papel',
                     quantidade_resma=quantidade_resma,
                     setor=setor_papel,
                     status='Aberto',
                 )
                 chamado.save()
-                titulo = tipo_chamado  # Defina o título para envio
-
                 setor = setor_papel  # Defina o setor para envio
+                print("foi")
                 
-            # Para solicitar tonner                
-            if titulo == 'Solicito Tonner impressora':
+                # Para solicitar tonner                
+            elif titulo == 'Solicitar Tonner Impressora':
                 tipo_impressora = request.POST.get('tipo_impressora')
                 setor_tonner = request.POST.get('setor_tonner')
 
                 chamado = Chamados.objects.create(
                     user=request.user,
-                    titulo="Solicito Tonner impressora",
+                    titulo='Solicito Tonner impressora',
                     tipo_equipamento=tipo_impressora,
                     setor=setor_tonner,
                     status='Aberto',
                 )
                 chamado.save()
-                titulo = tipo_chamado  # Defina o título para envio
                 setor = setor_tonner  # Defina o setor para envio
+                print("foi")
 
         # Verifique se o título e o setor estão definidos antes de enviar a mensagem
         if titulo and setor:

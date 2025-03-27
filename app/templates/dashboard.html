@@ -101,15 +101,19 @@
                   <tr>
                     <th class="border-top-0"><h5>#</h5></th>
                     <th class="border-top-0"><h5>Usuário</h5></th>
-                    <th class="border-top-0"><h5>Chamados Atendidos</h5></th>
+                    <th class="border-top-0"><h5>Total Chamados Atendidos</h5></th>
+                    <th class="border-top-0"><h5>Titulo do Chamado mais atendido</h5></th>
+                    <th class="border-top-0"><h5>Quantidade do Chamado mais atendido</h5></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {% for usuario in usuarios_equipe_ti %}
+                  {% for usuario in usuarios_chamados %}
                   <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ usuario.username }}</td>
                     <td>{{ usuario.total_chamados }}</td>
+                    <td>{{ usuario.titulo_mais_atendido }}</td>
+                    <td>{{ usuario.total_titulo }}</td>
                   </tr>
                   {% empty %}
                   <tr>
