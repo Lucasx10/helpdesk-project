@@ -8,8 +8,8 @@ from django.contrib.messages import constants
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
 from django.shortcuts import render
-from django.db.models.functions import ExtractMonth, TruncMonth
-from django.db.models import Count, Sum
+from django.db.models.functions import ExtractMonth, TruncMonth, TruncDay
+from django.db.models import Count, Sum, Q
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from asgiref.sync import async_to_sync
@@ -23,50 +23,61 @@ import calendar
 def dashboard(request):
     if request.user.profile.equipe_ti:
         ano_atual = datetime.now().year
-        chamados = Chamados.objects.all
-        chamados_concluidos = Chamados.objects.filter(status="Concluído")
-        chamados_com_5_estrelas = Avaliacao.objects.filter(nota=5).count()
+        mes_selecionado = request.GET.get('mes', '')
 
-        # Chamados por Setor (para o gráfico de pizza)
-        setores_chamados = Chamados.objects.values('setor').annotate(total=Count('id')).order_by('-total')[:5]
+        chamados = Chamados.objects.all()
+        if mes_selecionado:
+            chamados = chamados.filter(created_at__year=ano_atual, created_at__month=mes_selecionado)
+
+        chamados_concluidos = chamados.filter(status="Concluído")
+        chamados_com_5_estrelas = Avaliacao.objects.filter(nota=5, chamado__in=chamados).count()
+
+        # Chamados por setor
+        setores_chamados = chamados.values('setor').annotate(total=Count('id')).order_by('-total')[:5]
+
+        # Chamados por tempo (mês ou dia)
+        if mes_selecionado:
+            chamados_por_tempo = chamados.annotate(dia=TruncDay('created_at')).values('dia').annotate(total=Count('id')).order_by('dia')
+            labels_tempo = [item['dia'].strftime('%d') for item in chamados_por_tempo]
+        else:
+            chamados_por_tempo = chamados.filter(created_at__year=ano_atual).annotate(mes=TruncMonth('created_at')).values('mes').annotate(total=Count('id')).order_by('mes')
+            labels_tempo = [item['mes'].strftime('%b') for item in chamados_por_tempo]
+
+        dados_tempo = [item['total'] for item in chamados_por_tempo]
+
+        # Criar dicionário com todos os meses do ano, mesmo que não haja chamados
+        meses_ano = [calendar.month_abbr[i+1] for i in range(12)]  # Meses abreviados, ex: 'Jan', 'Fev'
         
-        # Chamados por mês (para o gráfico de onda)
-        chamados_por_mes = Chamados.objects.filter(created_at__year=ano_atual).annotate(month=TruncMonth('created_at')).values('month').annotate(total=Count('id')).order_by('month')
-        
-        # Gerar todos os meses do ano
-        meses_ano = [calendar.month_abbr[i+1] for i in range(12)]
-        
-        # Inicializar o dicionário para todos os meses com valor 0
+        # Inicializar o dicionário de chamados por mês
         chamados_por_mes_dict = {mes: 0 for mes in meses_ano}
         
-        # Atualizar o dicionário com os dados dos chamados por mês
-        for chamado in chamados_por_mes:
-            mes_nome = chamado['month'].strftime('%b')  # Ex: 'Jan', 'Feb', etc.
+        # Preencher o dicionário com os dados dos chamados, substituindo os valores com dados reais
+        for chamado in chamados_por_tempo:
+            mes_nome = chamado['mes'].strftime('%b')  # Ex: 'Jan', 'Feb', etc.
             chamados_por_mes_dict[mes_nome] = chamado['total']
-        
-        # Convertendo os dados para passar ao template
-        chamados_por_mes = [{'mes': mes, 'total': total} for mes, total in chamados_por_mes_dict.items()]
-        
+
+        # Reorganizar os dados para exibição no gráfico
+        dados_mes = [chamados_por_mes_dict[mes] for mes in meses_ano]
 
         # Quantidade de resmas de papel
-        quantidade_resmas = Chamados.objects.filter(status="Concluído").aggregate(Sum('quantidade_resma'))['quantidade_resma__sum'] or 0
-        
-       # Chamados atendidos por cada usuário TI
+        quantidade_resmas = chamados.filter(status="Concluído").aggregate(Sum('quantidade_resma'))['quantidade_resma__sum'] or 0
+
+        # Chamados atendidos por cada técnico dentro do mês
         usuarios_ti = (
             User.objects.filter(profile__equipe_ti=True)
-            .annotate(total_chamados=Count('chamados_atendidos'))
+            .annotate(total_chamados=Count('chamados_atendidos', filter=Q(chamados_atendidos__in=chamados)))
             .values("id", "username", "total_chamados")
         )
 
-        # Chamados mais atendidos por cada usuário
+        # Chamado mais atendido por técnico dentro do mês
         chamados_por_usuario = (
-            Chamados.objects.filter(status="Concluído")
+            chamados.filter(status="Concluído")
             .values("responsavel_ti__id", "responsavel_ti__username", "titulo")
             .annotate(total=Count("id"))
             .order_by("responsavel_ti__id", "-total")
         )
 
-        # Criar dicionário com o total de chamados atendidos por cada usuário TI
+        # Criar dicionário com o total de chamados atendidos por cada técnico
         usuarios_chamados = {user["id"]: {
             "username": user["username"],
             "total_chamados": user["total_chamados"],
@@ -77,13 +88,14 @@ def dashboard(request):
         # Preencher com os títulos mais atendidos
         for chamado in chamados_por_usuario:
             user_id = chamado["responsavel_ti__id"]
-            if user_id in usuarios_chamados:
-                if usuarios_chamados[user_id]["titulo_mais_atendido"] is None:
-                    usuarios_chamados[user_id]["titulo_mais_atendido"] = chamado["titulo"]
-                    usuarios_chamados[user_id]["total_titulo"] = chamado["total"]
+            if user_id in usuarios_chamados and usuarios_chamados[user_id]["titulo_mais_atendido"] is None:
+                usuarios_chamados[user_id]["titulo_mais_atendido"] = chamado["titulo"]
+                usuarios_chamados[user_id]["total_titulo"] = chamado["total"]
 
-        # Converter para lista para uso no template
         lista_usuarios_chamados = list(usuarios_chamados.values())
+
+        # Criar dicionário de meses para o filtro
+        meses_disponiveis = {str(i): calendar.month_name[i] for i in range(1, 13)}
 
         context = {
             "chamados": chamados,
@@ -91,8 +103,11 @@ def dashboard(request):
             "chamados_com_5_estrelas": chamados_com_5_estrelas,
             "chamados_solicito_resma_papel": quantidade_resmas,
             'setores_chamados': json.dumps(list(setores_chamados)),
-            'chamados_por_mes': chamados_por_mes,  # Dados para o gráfico de onda
+            'labels_tempo': json.dumps(meses_ano),  # Agora usa todos os meses
+            'dados_tempo': json.dumps(dados_mes),  # Dados para todos os meses
             "usuarios_chamados": lista_usuarios_chamados,
+            "meses_disponiveis": meses_disponiveis,
+            "mes_selecionado": mes_selecionado,
         }
         return render(request, 'dashboard.html', context)
     else:
