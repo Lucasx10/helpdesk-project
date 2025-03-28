@@ -49,7 +49,7 @@ def dashboard(request):
         
 
         # Quantidade de resmas de papel
-        quantidade_resmas = Chamados.objects.aggregate(Sum('quantidade_resma'))['quantidade_resma__sum'] or 0
+        quantidade_resmas = Chamados.objects.filter(status="Concluído").aggregate(Sum('quantidade_resma'))['quantidade_resma__sum'] or 0
         
        # Chamados atendidos por cada usuário TI
         usuarios_ti = (
@@ -84,8 +84,6 @@ def dashboard(request):
 
         # Converter para lista para uso no template
         lista_usuarios_chamados = list(usuarios_chamados.values())
-        print(lista_usuarios_chamados)
-
 
         context = {
             "chamados": chamados,
