@@ -156,7 +156,6 @@
                 }]
             },
             options: {
-                responsive: true,
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -165,6 +164,7 @@
                         }
                     }
                 },
+                responsive: true,
                 scales: {
                     y: { 
                         beginAtZero: true,  // Começar o gráfico do eixo Y em 0
@@ -181,32 +181,45 @@
             }
         });
 
-            var ctxMeses = document.getElementById('chamadosMesesChart').getContext('2d');
-            var labelsTempo = {{ labels_tempo|safe }};
-            var dataTempo = {{ dados_tempo|safe }};
+        var labelsTempo = {{ labels_tempo|safe }};
+        var dataTempo = {{ dados_tempo|safe }};
         
-            new Chart(ctxMeses, {
-                type: 'line',
-                data: {
-                    labels: labelsTempo,
-                    datasets: [{
-                        label: 'Chamados',
-                        tension: 0.3,
-                        data: dataTempo,
-                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        fill: true,
-                        borderWidth: 2,
-                    }]
+        console.log("Modo:", mesSelecionado ? "Dias do mês" : "Meses do ano");
+        console.log("labelsTempo recebido:", labelsTempo);
+        console.log("dataTempo recebido:", dataTempo);
+        
+        
+        var ctxMeses = document.getElementById('chamadosMesesChart').getContext('2d');
+
+        // Se o gráfico já existe, destrói ele corretamente
+        if (window.chamadosMesesChart instanceof Chart) {
+            window.chamadosMesesChart.destroy();
+        }
+
+        // Criar o gráfico novamente com os novos dados
+        window.chamadosMesesChart = new Chart(ctxMeses, {
+            type: 'line',
+            data: {
+                labels: labelsTempo,
+                datasets: [{
+                    label: 'Chamados',
+                    tension: 0.3,
+                    data: dataTempo,
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    fill: true,
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' }
                 },
-                options: {
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    },
-                    responsive: true,
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
     </script>
         
 {% endblock %}

@@ -25,7 +25,8 @@ def dashboard(request):
         ano_atual = datetime.now().year
         mes_selecionado = request.GET.get('mes', '')
 
-        chamados = Chamados.objects.all()
+        chamados = Chamados.objects.filter(created_at__year=ano_atual)
+
         if mes_selecionado:
             chamados = chamados.filter(created_at__year=ano_atual, created_at__month=mes_selecionado)
 
@@ -38,12 +39,13 @@ def dashboard(request):
         # Chamados por tempo (mês ou dia)
         if mes_selecionado:
             chamados_por_tempo = chamados.annotate(dia=TruncDay('created_at')).values('dia').annotate(total=Count('id')).order_by('dia')
-            labels_tempo = [item['dia'].strftime('%d') for item in chamados_por_tempo]
+            labels_tempo = [item['dia'].strftime('%d') for item in chamados_por_tempo]  # Pegar dias do mês
         else:
             chamados_por_tempo = chamados.filter(created_at__year=ano_atual).annotate(mes=TruncMonth('created_at')).values('mes').annotate(total=Count('id')).order_by('mes')
-            labels_tempo = [item['mes'].strftime('%b') for item in chamados_por_tempo]
+            labels_tempo = [item['mes'].strftime('%b') for item in chamados_por_tempo]  # Pegar meses do ano
 
         dados_tempo = [item['total'] for item in chamados_por_tempo]
+
 
         # Criar dicionário com todos os meses do ano, mesmo que não haja chamados
         meses_ano = [calendar.month_abbr[i+1] for i in range(12)]  # Meses abreviados, ex: 'Jan', 'Fev'
@@ -53,8 +55,10 @@ def dashboard(request):
         
         # Preencher o dicionário com os dados dos chamados, substituindo os valores com dados reais
         for chamado in chamados_por_tempo:
-            mes_nome = chamado['mes'].strftime('%b')  # Ex: 'Jan', 'Feb', etc.
-            chamados_por_mes_dict[mes_nome] = chamado['total']
+            mes = chamado.get('mes')  # Evita KeyError
+            if mes:
+                mes_nome = mes.strftime('%b')  # Ex: 'Jan', 'Feb', etc.
+                chamados_por_mes_dict[mes_nome] = chamado['total']
 
         # Reorganizar os dados para exibição no gráfico
         dados_mes = [chamados_por_mes_dict[mes] for mes in meses_ano]
@@ -96,6 +100,8 @@ def dashboard(request):
 
         # Criar dicionário de meses para o filtro
         meses_disponiveis = {str(i): calendar.month_name[i] for i in range(1, 13)}
+        
+        print(labels_tempo, dados_tempo)
 
         context = {
             "chamados": chamados,
@@ -103,12 +109,19 @@ def dashboard(request):
             "chamados_com_5_estrelas": chamados_com_5_estrelas,
             "chamados_solicito_resma_papel": quantidade_resmas,
             'setores_chamados': json.dumps(list(setores_chamados)),
-            'labels_tempo': json.dumps(meses_ano),  # Agora usa todos os meses
-            'dados_tempo': json.dumps(dados_mes),  # Dados para todos os meses
             "usuarios_chamados": lista_usuarios_chamados,
             "meses_disponiveis": meses_disponiveis,
             "mes_selecionado": mes_selecionado,
         }
+
+        # Se um mês foi selecionado, enviamos os DIAS
+        if mes_selecionado:
+            context["labels_tempo"] = json.dumps(labels_tempo)  # Dias do mês
+            context["dados_tempo"] = json.dumps(dados_tempo)    # Dados do mês
+        else:
+            context["labels_tempo"] = json.dumps(meses_ano)  # Meses do ano
+            context["dados_tempo"] = json.dumps(dados_mes)   # Dados anuais
+
         return render(request, 'dashboard.html', context)
     else:
         return redirect('index')
