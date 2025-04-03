@@ -18,6 +18,12 @@ from django.shortcuts import render
 from .models import Chamados, Avaliacao
 import json
 import calendar
+from django.contrib.auth.views import (
+    PasswordResetDoneView,
+    PasswordResetView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView,
+)
 
 @login_required(login_url='loginpage')
 def dashboard(request):
@@ -202,7 +208,33 @@ def login_view(request):
     else:
         return render(request, 'login.html')
 
-from django.core.cache import cache
+class MyPasswordResetConfirm(PasswordResetConfirmView):
+    '''
+    Requer password_reset_confirm.html
+    '''
+
+
+class MyPasswordResetComplete(PasswordResetCompleteView):
+    '''
+    Requer password_reset_complete.html
+    '''
+    ...
+
+# accounts/views.py
+class MyPasswordReset(PasswordResetView):
+    '''
+    Requer
+    registration/password_reset_form.html
+    registration/password_reset_email.html
+    '''
+    ...
+
+class MyPasswordResetDone(PasswordResetDoneView):
+    '''
+    Requer
+    registration/password_reset_done.html
+    '''
+    ...
 
 @login_required(login_url='loginpage')
 def index(request):
