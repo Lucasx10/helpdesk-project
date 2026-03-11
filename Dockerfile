@@ -19,4 +19,4 @@ COPY . /code/
 RUN python manage.py collectstatic --no-input
 
 # Comando padrão para executar o servidor
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "helpdesk.asgi:application"]
