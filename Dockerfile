@@ -1,0 +1,22 @@
+# Use a imagem base do Python para Django
+FROM python:3.12-slim
+
+# Configuração do ambiente de trabalho
+ENV PYTHONUNBUFFERED=1
+WORKDIR /code
+
+
+# Instalação das dependências do sistema
+RUN apt-get update && apt-get install -y 
+
+# Instalação das dependências do Python
+COPY requirements.txt /code/
+RUN pip install -r requirements.txt
+
+# Copia o código para o contêiner
+COPY . /code/
+
+RUN python manage.py collectstatic --no-input
+
+# Comando padrão para executar o servidor
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "helpdesk.asgi:application"]
