@@ -6,12 +6,12 @@ Este projeto implementa um **sistema Help Desk** utilizando o **Django** para ge
 
 ## Tecnologias Utilizadas
 
-- Python 3.13.1  
+- Python 3.12.1  
 - Django  
 - SQLite (ou outro banco de dados de sua escolha)  
 - Docker + Docker Compose  
 - Nginx  
-- Daphne (ASGI) para suporte a WebSockets  
+- Daphne (ASGI) 
 
 ---
 
@@ -24,7 +24,7 @@ cd helpdesk-project
 
 ## 🐳 Executando o Projeto com Docker (modo recomendado)
 
-Este modo garante que **WebSockets** funcionem corretamente na rede local.
+Este modo permite rodar a aplicação sem precisar configurar ambiente virtual local e facilita o deploy em múltiplas máquinas na mesma rede.
 
 ### Pré-requisitos
 
@@ -38,8 +38,8 @@ Este modo garante que **WebSockets** funcionem corretamente na rede local.
 O projeto inclui:
 
 - **Dockerfile**: Configura Python, instala dependências e roda **Daphne**  
-- **docker-compose.yml**: Orquestra os serviços `django`, `nginx` e `db` (PostgreSQL)  
-- **nginx/default.conf**: Configura Nginx para servir arquivos estáticos e WebSockets  
+- **docker-compose.yml**: Orquestra os serviços `django`, `nginx` 
+- **nginx/default.conf**: Configura Nginx para servir arquivos estáticos e encaminhar requisições para Django
 
 ---
 
@@ -56,8 +56,6 @@ Nginx: porta 80 do computador host
 
 - **Mesmo computador:** [http://localhost/](http://localhost/)  
 - **Outro PC na rede local:** `http://IP_DO_HOST/`  
-
-> WebSockets funcionarão via `ws://IP_DO_HOST/ws/...` sem HTTPS para testes locais.
 
 ---
 
