@@ -1,95 +1,120 @@
 # Sistema Help Desk - Python Django
 
-Este projeto implementa um **sistema Help Desk** utilizando o **Django** para gestão de chamados de suporte técnico. Através deste sistema, usuários podem abrir tickets, e a equipe de suporte pode gerenciar e resolver as solicitações de forma eficiente.
+Este projeto implementa um **sistema Help Desk** utilizando o **Django** para gestão de chamados de suporte técnico. Usuários podem abrir tickets, e a equipe de suporte pode gerenciar e resolver as solicitações de forma eficiente.
 
-# Tecnologias Utilizadas
-- Python 3.13.1 - Linguagem de programação
-- Django - Framework web para desenvolvimento rápido e eficaz
-- SQLite (ou outro banco de dados de sua escolha) - Banco de dados relacional utilizado para armazenar dados do sistema
+---
 
-## Clone o repositório 
+## Tecnologias Utilizadas
+
+- Python 3.12.1  
+- Django  
+- SQLite (ou outro banco de dados de sua escolha)  
+- Docker + Docker Compose  
+- Nginx  
+- Daphne (ASGI) 
+
+---
+
+## Clone o Repositório
 
 ```bash
 git clone https://github.com/Lucasx10/helpdesk-project.git
+cd helpdesk-project
 ```
 
-## Instalação
+## 🐳 Executando o Projeto com Docker (modo recomendado)
 
-### Crie um Ambiente Virtual com o venv
-O venv é uma biblioteca Python padrão, disponível nas versões 3.3 e posteriores. Para criar um ambiente virtual, siga os passos abaixo:
+Este modo permite rodar a aplicação sem precisar configurar ambiente virtual local e facilita o deploy em múltiplas máquinas na mesma rede.
 
-1. Abra um Terminal
+### Pré-requisitos
 
-Abra o terminal ou prompt de comando do seu sistema operacional.
+- Docker: [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/)  
+- Docker Compose: [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)  
 
-2. Navegue até o Diretório do Projeto
+---
 
-Use o comando cd para navegar até o diretório raiz do seu projeto.
+### Estrutura do Docker
+
+O projeto inclui:
+
+- **Dockerfile**: Configura Python, instala dependências e roda **Daphne**  
+- **docker-compose.yml**: Orquestra os serviços `django`, `nginx` 
+- **nginx/default.conf**: Configura Nginx para servir arquivos estáticos e encaminhar requisições para Django
+
+---
+
+### Build e execução
+
 ```bash
+docker-compose build
+docker-compose up
+Django/Daphne: porta 8000 dentro do container
+Nginx: porta 80 do computador host
+```
+
+## Acesso à aplicação
+
+- **Mesmo computador:** [http://localhost/](http://localhost/)  
+- **Outro PC na rede local:** `http://IP_DO_HOST/`  
+
+---
+
+## Observações sobre WebSockets
+
+- O projeto utiliza **Django Channels** e **ASGI**.  
+- Nginx já está configurado para WebSockets:
+
+```nginx
+proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+
+```
+## 🖥️ Desenvolvimento Local (sem Docker)
+### 1️⃣ Criar Ambiente Virtual
+```
 cd /caminho/do/seu/projeto
 ```
-
-3. Crie o Ambiente Virtual
-
-Use o comando `python -m venv nome_do_ambiente` para criar um ambiente virtual com o nome desejado. Substitua nome_do_ambiente pelo nome que você escolher para o ambiente virtual.
-
-```bash
+### Criar ambiente virtual
+```
 python -m venv meu_ambiente_virtual
 ```
 
-4. Ative o Ambiente Virtual
-
-Dependendo do seu sistema operacional, o comando para ativar o ambiente virtual varia:
-
-No Windows:
-
-```bash
+### Ativar
+### Windows
+```
 meu_ambiente_virtual\Scripts\activate
 ```
-
-No macOS e Linux:
-```bash
+### macOS/Linux
+```
 source meu_ambiente_virtual/bin/activate
 ```
 
-Você verá o nome do ambiente virtual atual no prompt do terminal, indicando que o ambiente foi ativado com sucesso.
-
-Como Desativar um Ambiente Virtual
-Para desativar um ambiente virtual e retornar ao ambiente global do Python, basta digitar:
-
+## Desativar o ambiente virtual:
 ```bash
 deactivate
 ```
-## Instalar as Dependências
-Como Instalar Pacotes em um Ambiente Virtual
 
-Com o ambiente virtual ativado, você pode instalar pacotes e bibliotecas específicos para o seu projeto sem afetar o ambiente global do Python. Use o comando pip para instalar as dependências:
-
-```bash
+# 2️⃣ Instalar Dependências
+```
 pip install -r requirements.txt
 ```
-
-## Executar o Projeto
-Agora que você tem o ambiente virtual configurado e as dependências instaladas, você pode rodar o projeto.
-
-1. Realize as Migrações do Banco de Dados
-
-Execute o seguinte comando para criar as tabelas no banco de dados:
-
-```bash
+# 3️⃣ Rodar o Projeto
+# Migrações
+```
 python manage.py makemigrations
 python manage.py migrate
 ```
-
-Execute o Servidor de Desenvolvimento
-
-Por fim, inicie o servidor de desenvolvimento com o comando:
-
-```bash
+# Coletar arquivos estáticos
+```
+python manage.py collectstatic --no-input
+```
+# Rodar servidor de desenvolvimento
+```
 python manage.py runserver
 ```
-O sistema estará disponível em http://localhost:8000.
+Acesse: http://localhost:8000
 
-## Video Tutorial
+🎥 Video Demonstração
 
 [https://github.com/Lucasx10/helpdesk-project/releases/download/main/Tutorial.HelpDesk.mp4](https://github.com/user-attachments/assets/0daae3c4-e8f7-41c4-9a57-4a55ccdb9387)
