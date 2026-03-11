@@ -1,16 +1,6 @@
-# app/urls.py
-from django.urls import path, include
+from django.urls import path
 from .views import *
-from rest_framework import routers
-from .api_views import ChamadoViewSet, ComentarioViewSet, AvaliacaoViewSet
 
-# Rotas da API REST
-router = routers.DefaultRouter()
-router.register(r'chamados', ChamadoViewSet)
-router.register(r'comentarios', ComentarioViewSet)
-router.register(r'avaliacoes', AvaliacaoViewSet)
-
-# URLs tradicionais do sistema
 urlpatterns = [
     path('home', index, name='index'),
     path("register", register, name="register"),
@@ -29,8 +19,6 @@ urlpatterns = [
     path('chamado/<int:chamado_id>/transferir/', transferir_chamado, name='transferir_chamado'),
     path('confirmar_finalizacao/<int:chamado_id>/', confirmar_finalizacao, name='confirmar_finalizacao'),
     path("chamados/concluidos/", chamados_concluidos, name="chamados_concluidos"),
-    path("dashboard/", dashboard, name="dashboard"),
-
-    # API REST
-    path("api/", include(router.urls)),
+    path('dashboard/', dashboard, name='dashboard'),
+    # path('enviar_mensagem_ti/', enviar_mensagem_ti, name='enviar_mensagem_ti'),
 ]

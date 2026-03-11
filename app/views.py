@@ -323,6 +323,7 @@ def abrir_chamado(request):
     
     if request.method == 'POST':
         tipo_chamado = request.POST.get('categoria_chamado')
+        print(request.POST)  # Verifica os dados enviados
         
         if tipo_chamado == 'equipamento':
             titulo = request.POST.get('tipo_chamado')
@@ -388,6 +389,7 @@ def abrir_chamado(request):
                 )
                 chamado.save()
                 setor = setor_papel  # Defina o setor para envio
+                print("foi")
                 
                 # Para solicitar tonner                
             elif titulo == 'Solicitar Tonner Impressora':
@@ -403,6 +405,7 @@ def abrir_chamado(request):
                 )
                 chamado.save()
                 setor = setor_tonner  # Defina o setor para envio
+                print("foi")
 
         # Verifique se o título e o setor estão definidos antes de enviar a mensagem
         if titulo and setor:
