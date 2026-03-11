@@ -1,5 +1,5 @@
 # Use a imagem base do Python para Django
-FROM python
+FROM python:3.12-slim
 
 # Configuração do ambiente de trabalho
 ENV PYTHONUNBUFFERED=1
