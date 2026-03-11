@@ -20,5 +20,6 @@ urlpatterns = [
     path('confirmar_finalizacao/<int:chamado_id>/', confirmar_finalizacao, name='confirmar_finalizacao'),
     path("chamados/concluidos/", chamados_concluidos, name="chamados_concluidos"),
     path('dashboard/', dashboard, name='dashboard'),
+    path('perfil/editar/', editar_perfil, name='editar_perfil'),
     # path('enviar_mensagem_ti/', enviar_mensagem_ti, name='enviar_mensagem_ti'),
 ]

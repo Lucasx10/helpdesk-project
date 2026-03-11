@@ -47,15 +47,6 @@
         </div>
         <div class="navbar-collapse collapse" id="navbarSupportedContent" data-navbarbg="skin5">
           <ul class="navbar-nav float-start me-auto">
-            <li class="nav-item search-box">
-              <a class="nav-link waves-effect waves-dark" href="javascript:void(0)">
-                <i class="mdi mdi-magnify me-1"></i> <span class="font-16">Search</span>
-              </a>
-              <form class="app-search position-absolute">
-                <input type="text" class="form-control" placeholder="Search &amp; enter" />
-                <a class="srh-btn"><i class="mdi mdi-window-close"></i></a>
-              </form>
-            </li>
                 <!-- Notification Sino -->
                 <div class="dropdown me-2 mt-2">
                   <a id="notification-icon" class="nav-link" href="#" data-bs-toggle="dropdown" aria-expanded="false">
@@ -73,12 +64,19 @@
                 <h5 class="me-3 mt-3">{{user.profile.nome}}</h5>
                 <a class="me-4 nav-link dropdown-toggle text-muted waves-effect waves-dark pro-pic" href="#" id="navbarDropdown"
                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <img src="{% static 'profile.jpg' %}" alt="user" class="rounded-circle" width="31" />
+                  {% if user.profile.foto %}
+                    <img src="{{ user.profile.foto.url }}" alt="user" class="rounded-circle" width="31" />
+                  {% else %}
+                    <img src="{% static 'profile.jpg' %}" alt="user" class="rounded-circle" width="31" />
+                  {% endif %}
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end user-dd animated" aria-labelledby="navbarDropdown">
                   {% comment %} <a class="dropdown-item" >
                     <i class="mdi mdi-account m-r-5 m-l-5"></i> My Profile
                   </a> {% endcomment %}
+                  <a class="dropdown-item" href="{% url 'editar_perfil' %}">
+                    <i class="mdi mdi-account-edit m-r-5 m-l-5"></i> Alterar Perfil
+                  </a>
                   <a class="dropdown-item" href="{% url 'logout' %}">
                     <i class="mdi mdi-logout m-r-5 m-l-5"></i> Sair
                   </a>

@@ -17,7 +17,7 @@
               </b>
             </a>
             <p class="text-center font-14">Helpdesk T.I - Cadastro</p>
-            <form method="post" action="{% url 'registration' %}">
+            <form method="post" action="{% url 'registration' %}" enctype="multipart/form-data">
               {% csrf_token %}
               {% if messages %}
                 {% for message in messages %}
@@ -27,8 +27,12 @@
                 {% endfor %}
               {% endif %}
               <div class="mb-3">
+                <label for="foto" class="form-label">Foto de perfil</label>
+                  <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
+              </div>
+              <div class="mb-3">
                 <label for="nome" class="form-label">Nome completo</label>
-                <input type="text" class="form-control" id="" name="nome" placeholder="Digite seu nome completo" required>
+                <input type="text" class="form-control" id="nome" name="nome" placeholder="Digite seu nome completo" required>
               </div>
               <div class="mb-3">
                 <label for="username" class="form-label">Username</label>

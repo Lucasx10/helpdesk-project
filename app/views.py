@@ -24,6 +24,7 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView,
     PasswordResetCompleteView,
 )
+from django.contrib.auth.decorators import login_required
 
 @login_required(login_url='loginpage')
 def dashboard(request):
@@ -148,6 +149,7 @@ def registration(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirmar_senha = request.POST.get('confirmar_senha')
+        foto = request.FILES.get("foto")
         
         users = User.objects.filter(username=username)
 
@@ -169,7 +171,8 @@ def registration(request):
         # Criação do perfil e associação com o usuário
         profile = Profile.objects.create(
             user=user,
-            nome=nome
+            nome=nome,
+            foto=foto
         )
         # Salvar o perfil
         profile.save()
@@ -528,6 +531,43 @@ def confirmar_finalizacao(request, chamado_id):
 
 def custom_handler404(request, exception=None):
     return render(request, 'error-404.html')
+
+@login_required(login_url='loginpage')
+def editar_perfil(request):
+    user = request.user
+    profile = user.profile
+
+    if request.method == "POST":
+        nome = request.POST.get('nome')
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        foto = request.FILES.get('foto')
+
+        # Valida se username é único (exceto para o próprio usuário)
+        if username != user.username and User.objects.filter(username=username).exists():
+            messages.error(request, "Username já está em uso por outro usuário.")
+            return redirect('editar_perfil')
+
+        # Valida email (opcional)
+        if email != user.email and User.objects.filter(email=email).exists():
+            messages.error(request, "Email já está em uso por outro usuário.")
+            return redirect('editar_perfil')
+
+        # Atualiza dados do usuário
+        user.username = username
+        user.email = email
+        user.save()
+
+        # Atualiza dados do profile
+        profile.nome = nome
+        if foto:
+            profile.foto = foto
+        profile.save()
+
+        messages.success(request, "Perfil atualizado com sucesso!")
+        return redirect('editar_perfil')
+
+    return render(request, 'editar_perfil.html', {'user': user, 'profile': profile})
 
 # def send_message_to_all_users(message):
 #     channel_layer = get_channel_layer()
